@@ -34,12 +34,12 @@ impl AppConfig {
             .map_err(|e| {
                 tracing::error!("Error initializing config: {}", e);
                 anyhow::anyhow!("{e}")
-            })? // 将错误映射为 anyhow 支持的
+            })? // 将错误映射为 anyhow 的错误
             .try_deserialize()  // 解析配置文件（可能出错）
             .map_err(|e| {
                 tracing::error!("Error deserializing config: {}", e);
                 anyhow::anyhow!("Failed to deserialize app_config.\n{e}")
-            })   // 将错误映射为 anyhow 支持的
+            })   // 将错误映射为 anyhow 的错误
     }
 }
 

@@ -2,29 +2,25 @@ mod logger;
 mod app_config;
 mod database;
 mod entity;
+mod server;
+mod app;
 
 use axum::{debug_handler, routing, Router};
 use axum::extract::State;
 use axum::response::IntoResponse;
-use sea_orm::{ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
-use tokio::net::TcpListener;
+use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter};
 use entity::prelude::*;
 use crate::entity::student;
+use crate::server::ServerState;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    logger::init();
-    let db = database::init().await?;
     let router = Router::new()
         .route("/", routing::get(query_index))
         .route("/index", routing::get(query_index))
-        .route("/student", routing::get(query_student)).with_state(db);
+        .route("/student", routing::get(query_student));
     
-    let port = app_config::get_server().port();
-    
-    let listener = TcpListener::bind(("127.0.0.1", port)).await?;
-    tracing::info!("listening on {}.", listener.local_addr()?);
-    axum::serve(listener, router).await?;
+    app::run(router).await?;
     
     Ok(())
 }
@@ -35,7 +31,7 @@ async fn query_index() -> &'static str {
 }
 
 #[debug_handler]
-async fn query_student(State(db): State<DatabaseConnection>) -> impl IntoResponse {
+async fn query_student(State(state): State<ServerState>) -> impl IntoResponse {
     let stu = Student::find()
         .filter(
             Condition::all()
@@ -43,7 +39,7 @@ async fn query_student(State(db): State<DatabaseConnection>) -> impl IntoRespons
                 .add(student::Column::Name.starts_with("钱"))
                 .add(student::Column::Name.ends_with("多"))
         )
-        .all(&db)
+        .all(state.db())
         .await
         .unwrap();
 

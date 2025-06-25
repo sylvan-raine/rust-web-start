@@ -1,13 +1,24 @@
+mod logger;
+mod app_config;
+mod database;
+
 use axum::{debug_handler, routing, Router};
 use tokio::net::TcpListener;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
+    logger::init();
+    let _ = database::init().await?;
     let router = Router::new()
         .route("/", routing::get(index));
-    let listener = TcpListener::bind(("127.0.0.1", 8080)).await.unwrap();
-    println!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, router).await.unwrap();
+    
+    let port = app_config::get_server().port();
+    
+    let listener = TcpListener::bind(("127.0.0.1", port)).await?;
+    tracing::info!("listening on {}.", listener.local_addr()?);
+    axum::serve(listener, router).await?;
+    
+    Ok(())
 }
 
 #[debug_handler]

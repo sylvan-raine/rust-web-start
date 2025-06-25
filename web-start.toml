@@ -1,0 +1,11 @@
+# 更换为自己的青黄
+[server]
+port = 10086
+
+[database]
+host = "127.0.0.1"
+port = 5432
+user = "postgres"
+passwd = "123456"
+database = "postgres"
+schema = "public"

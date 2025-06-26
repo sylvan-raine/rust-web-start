@@ -1,7 +1,14 @@
 use std::net::SocketAddr;
+use std::time::Duration;
+use axum::extract::{DefaultBodyLimit, Request};
 use axum::Router;
 use sea_orm::DatabaseConnection;
 use tokio::net::TcpListener;
+use tower_http::cors;
+use tower_http::cors::CorsLayer;
+use tower_http::normalize_path::NormalizePathLayer;
+use tower_http::timeout::TimeoutLayer;
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use crate::app_config;
 
 /// 将传进来的 [Router] 和 [ServerState] 绑定，并开始在指定的端口运行服务器
@@ -19,8 +26,32 @@ pub async fn start(router: Router<ServerState>, state: ServerState) -> anyhow::R
 
 /// 创建一个 [Router]，将 [ServerState] 嵌入到 [Router] 中，使得所有的请求处理函数能够共享这个资源
 fn build_router(router: Router<ServerState>, state: ServerState) -> Router {
-    Router::new()
-        .merge(router)
+    let tracing_layer = TraceLayer::new_for_http()
+        .make_span_with(|req: &Request| {
+            let method = req.method().to_string();
+            let uri = req.uri().to_string();
+            let id = format!("{:X}", uuid::Uuid::new_v4().as_u64_pair().0);   // 取前 64 位作为 uuid 记录下来（128位太长了）
+            tracing::info_span!("http request", uri, id, method)
+        })
+        .on_failure(())
+        .on_request(())
+        .on_response(DefaultOnResponse::new().level(tracing::Level::INFO));
+    let timeout_layer = TimeoutLayer::new(Duration::from_secs(120));
+    let body_limit_layer = DefaultBodyLimit::max((1024 * 1024 * 16) as usize);    // 16 MB 的最大报文大小
+    let cors_layer = CorsLayer::new()
+        .allow_methods(cors::Any)
+        .allow_headers(cors::Any)
+        .allow_origin(cors::Any)
+        .allow_credentials(false)
+        .max_age(Duration::from_secs(3600 * 24));
+    let path_normalize_layer = NormalizePathLayer::trim_trailing_slash();
+
+    router
+        .layer(path_normalize_layer)
+        .layer(timeout_layer)
+        .layer(body_limit_layer)
+        .layer(tracing_layer)
+        .layer(cors_layer)
         .with_state(state)
 }
 

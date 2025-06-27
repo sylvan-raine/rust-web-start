@@ -20,7 +20,7 @@
 # 目前支持的所有字段
 [server]                # 控制服务器属性
 port = 8080             # 端口号——默认值 8080
-log_level = "info"      # 默认日志输出等级为 info 以上的日志
+log_level = "info"      # 默认日志输出等级为 info 及以上的日志
 
 # 仅支持 PostgreSQL
 [database]              # 控制数据库连接

@@ -30,7 +30,7 @@ fn build_router(router: Router<ServerState>, state: ServerState) -> Router {
         .make_span_with(|req: &Request| {
             let method = req.method().to_string();
             let uri = req.uri().to_string();
-            let id = format!("{:16X}", uuid::Uuid::new_v4().as_u64_pair().0);   // 取前 64 位作为 uuid 记录下来（128位太长了）
+            let id = format!("{:016X}", uuid::Uuid::new_v4().as_u64_pair().0);   // 取前 64 位作为 uuid 记录下来（128位太长了）
             tracing::info_span!("http request", id, uri, method)
         })
         .on_failure(())

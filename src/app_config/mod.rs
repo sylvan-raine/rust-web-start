@@ -1,4 +1,3 @@
-use std::fmt::Debug;
 use std::sync::LazyLock;
 use config::Config;
 use serde::Deserialize;
@@ -10,7 +9,7 @@ mod database;
 
 static CONFIG: LazyLock<AppConfig> = LazyLock::new(|| AppConfig::load().unwrap());
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,       // server 配置字段
     database: DatabaseConfig,   // database 配置字段

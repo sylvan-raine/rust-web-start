@@ -6,12 +6,15 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.8", features = ["macros"] }
+axum-valid = { version = "0.24.0", features = ["full_validator"] }
 config = "0.15"
 num_cpus = "1.17.0"
 sea-orm = { version = "1.1", features = ["chrono", "debug-print", "sqlx-postgres", "with-rust_decimal", "runtime-tokio"] }
 serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
 tokio = { version = "1.45", features = ["full"] }
 tower-http = { version = "0.6", features = ["trace", "timeout", "cors", "limit", "normalize-path"] }
 tracing = { version = "0.1", features = ["async-await"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "chrono"] }
 uuid = { version = "1.17.0", features = ["v4"] }
+validator = { version = "0.20", features = ["derive"] }

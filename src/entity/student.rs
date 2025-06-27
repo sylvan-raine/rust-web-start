@@ -5,29 +5,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "student")]
-#[serde(rename_all = "camelCase")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub no: String,
+    pub id: String,
     pub name: String,
     pub sex: Option<String>,
     pub age: Option<i32>,
     pub email: Option<String>,
-    pub department: Option<String>,
+    pub department_id: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::department::Entity",
-        from = "Column::Department",
-        to = "super::department::Column::No",
+        from = "Column::DepartmentId",
+        to = "super::department::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     Department,
-    #[sea_orm(has_many = "super::sc::Entity")]
-    Sc,
+    #[sea_orm(has_many = "super::score::Entity")]
+    Score,
 }
 
 impl Related<super::department::Entity> for Entity {
@@ -36,18 +35,18 @@ impl Related<super::department::Entity> for Entity {
     }
 }
 
-impl Related<super::sc::Entity> for Entity {
+impl Related<super::score::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Sc.def()
+        Relation::Score.def()
     }
 }
 
 impl Related<super::course::Entity> for Entity {
     fn to() -> RelationDef {
-        super::sc::Relation::Course.def()
+        super::score::Relation::Course.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::sc::Relation::Student.def().rev())
+        Some(super::score::Relation::Student.def().rev())
     }
 }
 

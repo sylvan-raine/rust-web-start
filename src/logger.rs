@@ -11,7 +11,7 @@ pub fn init() {
                 // .with_file(true)                // 是否显示源文件目录
                 // .with_line_number(true)         // 是否显示 log 语句在源文件的行号
                 // .with_thread_ids(true)          // 是否显示线程 id
-                // .with_thread_names(true)        // 是否显示线程名
+                .with_thread_names(true)        // 是否显示线程名
                 // .with_target(false)              // 是否显示目标文件名
                 .with_writer(std::io::stderr)   // 写到哪里
         )

@@ -1,6 +1,6 @@
 use axum::{debug_handler, routing, Router};
 use axum::response::IntoResponse;
-use crate::query::response::QueryResult;
+use crate::route::result::QueryResult;
 use crate::server::ServerState;
 
 pub fn router() -> Router<ServerState> {

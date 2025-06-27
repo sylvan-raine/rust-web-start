@@ -4,5 +4,5 @@ pub mod prelude;
 
 pub mod course;
 pub mod department;
-pub mod sc;
+pub mod score;
 pub mod student;

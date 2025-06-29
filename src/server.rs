@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::time::Duration;
 use axum::extract::{DefaultBodyLimit, Request};
 use axum::Router;
@@ -14,13 +14,19 @@ use crate::app_config;
 /// 将传进来的 [Router] 和 [ServerState] 绑定，并开始在指定的端口运行服务器
 pub async fn start(router: Router<ServerState>, state: ServerState) -> anyhow::Result<()> {
     let port = app_config::get_server().port();
-    let listener = TcpListener::bind(("0.0.0.0", port)).await?;
-    tracing::info!("listening on {}.", listener.local_addr()?);
-
-    axum::serve(
-        listener,
-        build_router(router, state).into_make_service_with_connect_info::<SocketAddr>()
-    ).await?;
+    let service = build_router(router, state).into_make_service_with_connect_info::<SocketAddr>();
+    
+    
+    if app_config::get_server().ipv6_enabled() {
+        let listener_v6 = TcpListener::bind((Ipv6Addr::UNSPECIFIED, port)).await?;
+        tracing::info!("listening on {}.", listener_v6.local_addr()?);
+        axum::serve(listener_v6, service).await?;
+    } else {
+        let listener_v4 = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
+        tracing::info!("listening on {}.", listener_v4.local_addr()?);
+        axum::serve(listener_v4, service).await?;
+    }
+    
     Ok(())
 }
 

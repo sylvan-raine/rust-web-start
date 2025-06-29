@@ -1,5 +1,7 @@
 [server]
 port = 8080
+ipv4_enabled = false
+ipv6_enabled = true
 
 [database]
 host = "127.0.0.1"

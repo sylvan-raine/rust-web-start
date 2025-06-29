@@ -17,7 +17,7 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn load() -> anyhow::Result<Self> {
-        Config::builder()
+        let configuration: AppConfig = Config::builder()
             .add_source(    // 添加 app_config 的来源：web-start.toml
                 config::File::with_name("web-start.toml")
                     .required(true)
@@ -31,14 +31,20 @@ impl AppConfig {
             )
             .build()    // 启动 I/O 读取配置文件（可能出错）
             .map_err(|e| {
-                tracing::error!("Error initializing config: {}", e);
+                tracing::error!("Error initializing config: {e}");
                 anyhow::anyhow!("{e}")
             })? // 将错误映射为 anyhow 的错误
             .try_deserialize()  // 解析配置文件（可能出错）
             .map_err(|e| {
-                tracing::error!("Error deserializing config: {}", e);
+                tracing::error!("Error deserializing config: {e}");
                 anyhow::anyhow!("Failed to deserialize app_config.\n{e}")
-            })   // 将错误映射为 anyhow 的错误
+            })?;   // 将错误映射为 anyhow 的错误
+        
+        let server_config = &configuration.server;
+        if !server_config.ipv6_enabled() ^ server_config.ipv4_enabled() {
+            panic!("IPv6 and IPv4 are not allowed to be turned on at the same time.")
+        }
+        Ok(configuration)
     }
 }
 

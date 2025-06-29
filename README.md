@@ -12,6 +12,7 @@
 - 数据校验的自定义
 - 数据库连接，以及查询
 - 完成学生的增删查改（CRUD）
+- 部分支持 IPv6（IPv4 和 IPv6 只能开启一个，无法支持双栈）
 
 ### 目标
 - 完善所有实体的 CRUD
@@ -29,6 +30,8 @@
 [server]                # 控制服务器属性
 port = 8080             # 端口号——默认值 8080
 log_level = "info"      # 默认日志输出等级为 info 及以上的日志
+ipv4_enabled = true     # 开启 IPv4 ( 两个只能开启一个 )
+ipv6_enalbed = false    # 开启 IPv6 ( 两个只能开启一个 )
 
 # 仅支持 PostgreSQL
 [database]              # 控制数据库连接

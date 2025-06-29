@@ -10,7 +10,7 @@ pub enum AppError {
     #[error("Why you do this to me! 🥲")]
     MethodNotAllowed,               // 405 Method Not Allowed
     
-    #[error("Sorry, what's your query? 🤔 {0}")]
+    #[error("Sorry, what's your request? 🤔 {0}")]
     BadQuery(String),               // 400 Bad Request
     
     #[error("Sorry, what's your JSON? 🤔 {0}")]
@@ -23,10 +23,10 @@ pub enum AppError {
     UnprocessableEntity(String),    // 422 Unprocessable Entity
     
     #[error("It's hard to tell you I broke down... 😶")]
-    Internal(String),               // 服务器内部错误
+    Internal(String),               // 500 服务器内部错误
     
     #[error("No... The database can't handle this. 😍")]
-    Database(String),               // 数据库错误
+    Database(String),               // 500 数据库错误
 }
 
 impl IntoResponse for AppError {
@@ -34,6 +34,7 @@ impl IntoResponse for AppError {
         #[derive(Serialize)]
         struct ResponseStruct {
             status_code: u16,
+            status: String,
             error: AppError,
             to_client: String,
         }
@@ -41,6 +42,7 @@ impl IntoResponse for AppError {
         (self.status_code(), axum::Json(
             ResponseStruct {
                 status_code: self.status_code().as_u16(),
+                status: self.status_code().to_string(),
                 to_client: self.to_string(),
                 error: self
             }

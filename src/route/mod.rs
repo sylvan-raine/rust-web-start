@@ -1,32 +1,24 @@
 use axum::Router;
 use crate::error::AppError;
-use crate::route::result::QueryResult;
+use crate::route::result::AppResult;
 use crate::server::ServerState;
 
-pub mod student;
-pub mod index;
-mod result;
-mod score;
-mod department;
-mod course;
+pub mod result;
+pub mod request;
+mod extract;
 
 pub fn build_router() -> Router<ServerState> {
-    Router::new()
-        .merge(index::router())
-        .merge(student::router())
-        .merge(score::router())
-        .merge(department::router())
-        .merge(course::router())
+    request::build_router()
         .fallback(not_found)
         .method_not_allowed_fallback(not_allowed)
 }
 
-async fn not_found() -> QueryResult<()> {
+async fn not_found() -> AppResult<()> {
     tracing::warn!("Not Found");
-    QueryResult::Err(AppError::NotFound)
+    AppResult::Err(AppError::NotFound)
 }
 
-async fn not_allowed() -> QueryResult<()> {
+async fn not_allowed() -> AppResult<()> {
     tracing::warn!("Method Not Allowed");
-    QueryResult::Err(AppError::MethodNotAllowed)
+    AppResult::Err(AppError::MethodNotAllowed)
 }

@@ -6,7 +6,6 @@ mod server;
 mod app;
 mod route;
 mod error;
-mod extract;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

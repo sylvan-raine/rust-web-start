@@ -4,3 +4,4 @@ pub use super::course::Entity as Course;
 pub use super::department::Entity as Department;
 pub use super::score::Entity as Score;
 pub use super::student::Entity as Student;
+pub use super::users::Entity as Users;

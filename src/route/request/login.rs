@@ -6,7 +6,7 @@ use serde::Deserialize;
 use validator::Validate;
 use crate::entity::prelude::Users;
 use crate::route::extract::ValidQuery;
-use crate::route::result::QueryResult;
+use crate::route::result::AppResult;
 use crate::server::ServerState;
 
 pub fn router() -> Router<ServerState> {
@@ -16,13 +16,12 @@ pub fn router() -> Router<ServerState> {
 }
 
 /// 路由到 login 模块下的默认界面
-async fn index() -> QueryResult<&'static str> {
-    QueryResult::Ok("Welcome! This is the index page of login.")
+async fn index() -> AppResult<&'static str> {
+    AppResult::Ok("Welcome! This is the index page of login.")
 }
 
 
 /// 处理路由到 login 模块下的查询请求
-
 #[derive(Deserialize, Validate)]
 struct Params {
     #[validate(length(min = 1, max = 32, message = "id should be less than 32 and more than 1 characters"))]
@@ -39,5 +38,5 @@ async fn query(State(state): State<ServerState>, ValidQuery(param): ValidQuery<P
         .await
         .unwrap();
 
-    QueryResult::Ok(course)
+    AppResult::Ok(course)
 }

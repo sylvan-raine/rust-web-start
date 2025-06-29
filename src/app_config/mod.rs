@@ -29,7 +29,7 @@ impl AppConfig {
                     .separator("_")
                     .list_separator(",")
             )
-            .build()    // 启动 I/O 读取配置文件（可能出错） 
+            .build()    // 启动 I/O 读取配置文件（可能出错）
             .map_err(|e| {
                 tracing::error!("Error initializing config: {}", e);
                 anyhow::anyhow!("{e}")

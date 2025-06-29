@@ -6,3 +6,4 @@ pub mod course;
 pub mod department;
 pub mod score;
 pub mod student;
+pub mod users;

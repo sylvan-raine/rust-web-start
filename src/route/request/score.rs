@@ -3,14 +3,24 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use sea_orm::EntityTrait;
 use crate::entity::prelude::Score;
+use crate::route::not_found;
 use crate::route::result::QueryResult;
 use crate::server::ServerState;
 
 pub fn router() -> Router<ServerState> {
     Router::new()
-        .route("/sc", routing::get(query))
+        .route("/", routing::get(index))
+        .route("/query", routing::get(query))
+        .fallback(not_found)
 }
 
+/// 路由到 score 模块下的默认界面
+async fn index() -> QueryResult<&'static str> {
+    QueryResult::Ok("Welcome! This is the index page of score.")
+}
+
+
+/// 处理路由到 score 模块下的查询请求
 #[debug_handler]
 async fn query(State(state): State<ServerState>) -> impl IntoResponse {
     tracing::debug!("route sc table");

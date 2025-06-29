@@ -42,7 +42,7 @@ impl AppConfig {
         
         let server_config = &configuration.server;
         if !server_config.ipv6_enabled() ^ server_config.ipv4_enabled() {
-            panic!("IPv6 and IPv4 are not allowed to be turned on at the same time.")
+            panic!("IPv6 and IPv4 are not allowed to be turned [on/off] at the same time.")
         }
         Ok(configuration)
     }

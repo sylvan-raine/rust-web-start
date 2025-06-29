@@ -19,8 +19,8 @@ pub async fn init() -> anyhow::Result<DatabaseConnection> {
     
     options.min_connections(max((num_cpus::get() * 4) as u32, 10))
         .max_connections(max((num_cpus::get() * 8) as u32, 10))
-        .connect_timeout(Duration::from_secs(5))
-        .acquire_timeout(Duration::from_secs(5))
+        .connect_timeout(Duration::from_secs(20))
+        .acquire_timeout(Duration::from_secs(20))
         .idle_timeout(Duration::from_secs(5))
         .max_lifetime(Duration::from_secs(300))
         .sqlx_logging(false)

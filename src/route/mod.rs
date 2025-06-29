@@ -5,6 +5,7 @@ use crate::server::ServerState;
 
 pub mod result;
 pub mod request;
+pub mod page;
 mod extract;
 
 pub fn build_router() -> Router<ServerState> {

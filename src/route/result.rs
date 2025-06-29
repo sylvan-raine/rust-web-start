@@ -14,14 +14,6 @@ macro_rules! throw_err {
 }
 
 #[derive(Serialize)]
-pub struct Page<T: Serialize> {
-    pub page_index: u64,
-    pub page_size: u64,
-    pub total_pages: u64,
-    pub items: Vec<T>
-}
-
-#[derive(Serialize)]
 pub enum AppResult<T: Serialize> {
     Err(AppError),
     Ok(T)

@@ -10,7 +10,8 @@ use crate::entity::student::ActiveModel;
 use crate::error::AppError;
 use crate::route::extract::{Path, ValidJson, ValidQuery};
 use crate::route::not_found;
-use crate::route::result::{Page, AppResult};
+use crate::route::page::{Page, PageParam};
+use crate::route::result::AppResult;
 use crate::server::ServerState;
 use crate::throw_err;
 
@@ -39,16 +40,16 @@ struct InsertParams {
     name: String,
 
     #[validate(length(min = 1, max = 2))]
-    sex: String,
+    sex: Option<String>,
 
     #[validate(range(min = 0))]
-    age: i32,
+    age: Option<i32>,
 
     #[validate(email)]
-    email: String,
+    email: Option<String>,
 
     #[validate(length(max = 2))]
-    department_id: String,
+    department_id: Option<String>,
 }
 
 #[debug_handler]
@@ -67,13 +68,12 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
-    let result = throw_err!(Student::find_by_id(&id).one(state.db()).await);
-    if let None = result {
-        AppResult::Err(AppError::Internal("No specified student found".to_string()))
-    } else {
-        let active_model = params.into_active_model();
-        throw_err!(active_model.update(state.db()).await);
+    let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
+    if let Some(_) = target {
+        throw_err!(params.into_active_model().update(state.db()).await);
         AppResult::Ok(format!("Successfully updated {id}"))
+    } else {
+        AppResult::Err(AppError::Internal("No specified student found".to_string()))
     }
 }
 
@@ -83,12 +83,12 @@ async fn delete(
     Path(id): Path<String>,
 ) -> AppResult<String> {
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
-    if let None = target {
-        AppResult::Err(AppError::Internal("No specified student found".to_string()))
+    if let Some(student) = target {
+        throw_err!(student.delete(state.db()).await);
+        tracing::info!("Deleted student, id: {id}");
+        AppResult::Ok(format!("Successfully deleted student with id: {id}."))    
     } else {
-        throw_err!(target.unwrap().delete(state.db()).await);
-        tracing::info!("deleted student, id: {id}");
-        AppResult::Ok(format!("Successfully deleted {id}"))
+        AppResult::Err(AppError::Internal("No specified student found".to_string()))
     }
 }
 
@@ -97,51 +97,51 @@ async fn delete(
 #[serde(rename_all = "camelCase")]
 struct QueryParams {
     keyword: Option<String>,
+    
+    #[validate(email)]
+    email: Option<String>,
 
-    #[validate(range(min = 1, message = "Page index should be less than or equal to 1."))]
-    #[serde(default = "QueryParams::default_page_index")]
-    page_index: u64,
+    #[validate(length(max = 2))]
+    sex: Option<String>,
 
-    #[validate(range(min = 5, max = 100, message = "The amount of items in one page should be at least 5 and at most 100."))]
-    #[serde(default = "QueryParams::default_page_size")]
-    page_size: u64
+    #[validate(range(min = 0))]
+    age: Option<i32>,
+
+    #[validate(nested)]
+    #[serde(flatten)]
+    page: PageParam,
 }
-
-impl QueryParams {
-    const DEFAULT_PAGE_SIZE: u64 = 20;
-    const DEFAULT_PAGE_INDEX: u64 = 1;
-    fn default_page_size() -> u64 {
-        QueryParams::DEFAULT_PAGE_SIZE
-    }
-
-    fn default_page_index() -> u64 {
-        QueryParams::DEFAULT_PAGE_INDEX
-    }
-}
-
 
 /// 处理路由到 student 模块下的查询请求
 #[debug_handler]
 async fn query(
     State(state): State<ServerState>,
-    ValidQuery(param): ValidQuery<QueryParams>
+    ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
     tracing::debug!("Query student");
     let stu_sql = Student::find()
-        .apply_if(param.keyword.as_ref(), |q, k| {
+        .apply_if(params.keyword.as_ref(), |q, k| {
             q.filter(student::Column::Name.contains(k))
         })
+        .apply_if(params.email.as_ref(), |q, k| {
+            q.filter(student::Column::Email.contains(k))
+        })
+        .apply_if(params.sex.as_ref(), |q, k| {
+            q.filter(student::Column::Sex.eq(k))
+        })
+        .apply_if(params.age, |q, k| {
+            q.filter(student::Column::Age.eq(k))
+        })
         .order_by_asc(student::Column::Id)
-        .paginate(state.db(), param.page_size);
+        .paginate(state.db(), params.page.size);
 
     let amount = throw_err!(stu_sql.num_items().await);
-    let items = throw_err!(stu_sql.fetch_page(param.page_index - 1).await);
+    let items = throw_err!(stu_sql.fetch_page(params.page.index - 1).await);
 
     AppResult::Ok(
         Page {
-            page_index: param.page_index,
-            page_size: param.page_size,
-            total_pages: amount / param.page_size + 1,
+            param: params.page,
+            total: amount / params.page.size + 1,
             items
         }
     )

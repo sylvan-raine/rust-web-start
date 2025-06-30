@@ -51,6 +51,7 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Insert department");
     throw_err!(params.into_active_model().insert(state.db()).await);
     AppResult::Ok("Successfully inserted department!".to_string())
 }
@@ -62,12 +63,13 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Update department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
     if let Some(_) = target {
         throw_err!(params.into_active_model().update(state.db()).await);
         AppResult::Ok("Successfully updated department!".to_string())    
     } else {
-        AppResult::Err(AppError::Internal("No specified department found!".to_string()))
+        AppResult::Err(AppError::NotFound("No specified department found!".to_string()))
     }
 }
 
@@ -77,13 +79,14 @@ async fn delete(
     State(state): State<ServerState>,
     Path(id): Path<String>,
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Delete department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
     if let Some(department) = target {
         throw_err!(department.delete(state.db()).await);
         tracing::info!("Deleted department, {id}");
         AppResult::Ok(format!("Successfully deleted department with id: {id}."))
     } else {
-        AppResult::Err(AppError::Internal("No specified department found!".to_string()))
+        AppResult::Err(AppError::NotFound("No specified department found!".to_string()))
     }
 }
 
@@ -110,28 +113,22 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Query department");
-    let dep_sql = Department::find()
-        .apply_if(params.keyword.as_ref(), |q, k| {
-            q.filter(department::Column::Name.contains(k))
+    tracing::debug!("Begin to handle: Query department");
+    let pagination = Department::find()
+        .apply_if(params.keyword.as_ref(), |rows, keyword| {
+            rows.filter(department::Column::Name.contains(keyword))
         })
-        .apply_if(params.office_room.as_ref(), |q, k| {
-            q.filter(department::Column::OfficeRoom.eq(k))
+        .apply_if(params.office_room.as_ref(), |rows, keyword| {
+            rows.filter(department::Column::OfficeRoom.eq(keyword))
         })
-        .apply_if(params.home_page.as_ref(), |q, k| {
-            q.filter(department::Column::HomePage.eq(k))
+        .apply_if(params.home_page.as_ref(), |rows, keyword| {
+            rows.filter(department::Column::HomePage.eq(keyword))
         })
         .order_by_asc(department::Column::Id)
         .paginate(state.db(), params.page.size);
 
-    let amount = throw_err!(dep_sql.num_items().await);
-    let items = throw_err!(dep_sql.fetch_page(params.page.index - 1).await);
+    let total = throw_err!(pagination.num_pages().await);
+    let items = throw_err!(pagination.fetch_page(params.page.index - 1).await);
 
-    AppResult::Ok(
-        Page {
-            param: params.page,
-            total: amount / params.page.size + 1,
-            items
-        }
-    )
+    AppResult::Ok(Page { param: params.page, total, items })
 }

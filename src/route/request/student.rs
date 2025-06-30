@@ -1,10 +1,12 @@
 use axum::{debug_handler, routing, Router};
 use axum::extract::State;
-use sea_orm::{ColumnTrait, EntityTrait, QueryTrait, QueryFilter, QueryOrder, PaginatorTrait, DeriveIntoActiveModel, IntoActiveModel, ActiveModelTrait, ModelTrait};
+use sea_orm::prelude::Expr;
+use sea_orm::sea_query::IntoCondition;
+use sea_orm::{ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait};
 use serde::Deserialize;
 use validator::Validate;
 use crate::entity::prelude::Student;
-use crate::entity::student;
+use crate::entity::{department, student};
 use crate::entity::student::Model;
 use crate::entity::student::ActiveModel;
 use crate::error::AppError;
@@ -57,6 +59,7 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Insert student");
     let new_student = params.into_active_model();
     let _result = throw_err!(Student::insert(new_student).exec(state.db()).await);
     AppResult::Ok("Successfully inserted a student".to_string())
@@ -68,12 +71,13 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Update student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
     if let Some(_) = target {
         throw_err!(params.into_active_model().update(state.db()).await);
         AppResult::Ok(format!("Successfully updated {id}"))
     } else {
-        AppResult::Err(AppError::Internal("No specified student found".to_string()))
+        AppResult::Err(AppError::NotFound("No specified student found".to_string()))
     }
 }
 
@@ -82,13 +86,14 @@ async fn delete(
     State(state): State<ServerState>,
     Path(id): Path<String>,
 ) -> AppResult<String> {
+    tracing::debug!("Begin to handle: Delete student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
     if let Some(student) = target {
         throw_err!(student.delete(state.db()).await);
         tracing::info!("Deleted student, id: {id}");
         AppResult::Ok(format!("Successfully deleted student with id: {id}."))    
     } else {
-        AppResult::Err(AppError::Internal("No specified student found".to_string()))
+        AppResult::Err(AppError::NotFound("No specified student found".to_string()))
     }
 }
 
@@ -97,6 +102,7 @@ async fn delete(
 #[serde(rename_all = "camelCase")]
 struct QueryParams {
     keyword: Option<String>,
+    department: Option<String>,
     
     #[validate(email)]
     email: Option<String>,
@@ -118,25 +124,31 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Query student");
-    let stu_sql = Student::find()
-        .apply_if(params.keyword.as_ref(), |q, k| {
-            q.filter(student::Column::Name.contains(k))
+    tracing::debug!("Begin to handle: Query student");
+    let pagination = Student::find()
+        .apply_if(params.department, |rows, keyword| {
+            rows.join(JoinType::InnerJoin, department::Relation::Student.def().rev()
+                .on_condition(move |_student, department_name| {
+                    Expr::col((department_name, department::Column::Name)).like(format!("%{keyword}%")).into_condition()
+                }))
         })
-        .apply_if(params.email.as_ref(), |q, k| {
-            q.filter(student::Column::Email.contains(k))
+        .apply_if(params.keyword.as_ref(), |rows, keyword| {
+            rows.filter(student::Column::Name.contains(keyword))
         })
-        .apply_if(params.sex.as_ref(), |q, k| {
-            q.filter(student::Column::Sex.eq(k))
+        .apply_if(params.email.as_ref(), |rows, keyword| {
+            rows.filter(student::Column::Email.contains(keyword))
         })
-        .apply_if(params.age, |q, k| {
-            q.filter(student::Column::Age.eq(k))
+        .apply_if(params.sex.as_ref(), |rows, keyword| {
+            rows.filter(student::Column::Sex.eq(keyword))
+        })
+        .apply_if(params.age, |rows, keyword| {
+            rows.filter(student::Column::Age.eq(keyword))
         })
         .order_by_asc(student::Column::Id)
         .paginate(state.db(), params.page.size);
 
-    let amount = throw_err!(stu_sql.num_items().await);
-    let items = throw_err!(stu_sql.fetch_page(params.page.index - 1).await);
+    let amount = throw_err!(pagination.num_items().await);
+    let items = throw_err!(pagination.fetch_page(params.page.index - 1).await);
 
     AppResult::Ok(
         Page {

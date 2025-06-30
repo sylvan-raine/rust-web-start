@@ -5,6 +5,7 @@ use validator::Validate;
 
 #[derive(Serialize)]
 pub struct Page<T: Serialize> {
+    #[serde(flatten)]
     pub param: PageParam,
     pub total: u64,
     pub items: Vec<T>

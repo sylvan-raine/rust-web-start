@@ -14,10 +14,10 @@
 - 完成所有的 CRUD 功能，包括联表查询
 - 部分支持 IPv6（IPv4 和 IPv6 只能开启一个，无法支持双栈）
 - 用户登陆
+- 用户登录加密
 
 ### 目标
 - 完全支持 IPv6
-- 用户登录加密
 
 ### 功能详细说明
 #### 日志集成
@@ -31,6 +31,8 @@ port = 8080             # 端口号——默认值 8080
 log_level = "info"      # 默认日志输出等级为 info 及以上的日志
 ipv4_enabled = true     # 开启 IPv4 ( 两个只能开启一个 )
 ipv6_enalbed = false    # 开启 IPv6 ( 两个只能开启一个 )
+# 默认值为这一长串，是 "default secret key of web-starter" 的 base64 编码，这个字段必须是一个合法的可用 base 64 解码的字符串
+secret_key = "ZGVmYXVsdCBzZWNyZXQga2V5IG9mIHdlYi1zdGFydGVy"
 
 # 仅支持 PostgreSQL
 [database]              # 控制数据库连接
@@ -53,4 +55,4 @@ schema = "public"       # 要连接的数据库的模式，默认 public
 - 查询某一个学生的所有成绩
 - 查询某一个课程的所有成绩
 #### 登录功能
-通过 login 页面生成一个 JWT 返回给浏览器，浏览器通过携带这个 JWT 访问受保护的页面，目前受保护的页面，除了 `login` 页面之外的所有页面
+通过 login 页面生成一个 JWT 返回给浏览器，浏览器通过携带这个 JWT 访问受保护的页面，目前受保护的页面为除了 `login` 页面之外的所有页面

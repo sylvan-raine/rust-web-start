@@ -30,6 +30,7 @@ pub fn router() -> Router<ServerState> {
 }
 
 /// 路由到 score 模块下的默认界面
+#[debug_handler]
 async fn index() -> AppResult<&'static str> {
     AppResult::Ok("Welcome! This is the index page of score.")
 }
@@ -46,6 +47,7 @@ struct InsertParams {
     record_date: Option<Date>
 }
 
+#[debug_handler]
 async fn insert(
     State(state): State<ServerState>,
     ValidJson(json): ValidJson<InsertParams>
@@ -55,6 +57,7 @@ async fn insert(
     AppResult::Ok("Succesfully inserted score!".to_string())
 }
 
+#[debug_handler]
 async fn update(
     State(state): State<ServerState>,
     Path((stu_id, course_id)): Path<(String, String)>,
@@ -70,6 +73,7 @@ async fn update(
     }
 }
 
+#[debug_handler]
 async fn delete(
     State(state): State<ServerState>,
     Path((stu_id, course_id)): Path<(String, String)>

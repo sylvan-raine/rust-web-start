@@ -1,6 +1,9 @@
 use axum::{debug_handler, routing, Router};
 use axum::extract::State;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, 
+    IntoActiveModel, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait
+};
 use serde::Deserialize;
 use validator::Validate;
 use crate::entity::department;
@@ -25,6 +28,7 @@ pub fn router() -> Router<ServerState> {
 }
 
 /// 路由到 department 模块下的默认界面
+#[debug_handler]
 async fn index() -> AppResult<&'static str> {
     AppResult::Ok("Welcome! This is the index page of department.")
 }

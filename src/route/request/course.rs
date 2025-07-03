@@ -56,6 +56,7 @@ struct InsertParam {
 }
 
 /// 处理路由到 course 模块下的 insert 界面
+#[debug_handler]
 async fn insert(
     State(state): State<ServerState>,
     ValidJson(json): ValidJson<InsertParam>,
@@ -67,6 +68,7 @@ async fn insert(
 }
 
 /// 处理路由到 course 模块下的 update 请求
+#[debug_handler]
 async fn update(
     State(state): State<ServerState>,
     Path(id): Path<String>,
@@ -83,6 +85,7 @@ async fn update(
 }
 
 /// 处理路由到 course 模块下的 delete 请求
+#[debug_handler]
 async fn delete(
     State(state): State<ServerState>, 
     Path(id): Path<String>

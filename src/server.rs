@@ -2,6 +2,8 @@ use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::time::Duration;
 use axum::extract::{DefaultBodyLimit, Request};
 use axum::Router;
+use base64::prelude::BASE64_STANDARD_NO_PAD;
+use base64::Engine;
 use sea_orm::DatabaseConnection;
 use tokio::net::TcpListener;
 use tower_http::cors;
@@ -36,7 +38,7 @@ fn build_router(router: Router<ServerState>, state: ServerState) -> Router {
         .make_span_with(|req: &Request| {
             let method = req.method().to_string();
             let uri = req.uri().to_string();
-            let id = format!("{:016X}", uuid::Uuid::new_v4().as_u64_pair().0);   // 取前 64 位作为 uuid 记录下来（128位太长了）
+            let id = BASE64_STANDARD_NO_PAD.encode(uuid::Uuid::new_v4());   // 使用 base64 编码的 uuid 作为请求 id
             tracing::info_span!("http request", id, uri, method)
         })
         .on_failure(())

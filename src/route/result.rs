@@ -8,7 +8,7 @@ macro_rules! throw_err {
     ($err_or_success : expr) => {
         match $err_or_success {
             Ok(val) => val,
-            Err(err) => return crate::route::AppResult::Err(crate::route::AppError::from(err))
+            Err(err) => return crate::route::AppResult::Err(err.into())
         }
     };
 }
@@ -30,12 +30,12 @@ impl<T: Serialize> IntoResponse for AppResult<T> {
 
 impl<T: Serialize> From<sea_orm::DbErr> for AppResult<T> {
     fn from(value: sea_orm::DbErr) -> Self {
-        AppResult::Err(AppError::from(value))
+        AppResult::Err(value.into())
     }
 }
 
 impl<T: Serialize> From<anyhow::Error> for AppResult<T> {
     fn from(value: anyhow::Error) -> Self {
-        AppResult::Err(AppError::from(value))
+        AppResult::Err(value.into())
     }
 }

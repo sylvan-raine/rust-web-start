@@ -23,8 +23,8 @@ pub async fn init() -> anyhow::Result<DatabaseConnection> {
         .acquire_timeout(Duration::from_secs(20))
         .idle_timeout(Duration::from_secs(5))
         .max_lifetime(Duration::from_secs(300))
-        .sqlx_logging(false)
-        .set_schema_search_path(db_config.schema());
+        .set_schema_search_path(db_config.schema())
+        .sqlx_logging(false);
     
     let conn = Database::connect(options).await.map_err(|e| {
         tracing::error!("Error connecting to database.");
@@ -44,7 +44,7 @@ async fn log_database_version(db: &DatabaseConnection) -> anyhow::Result<()> {
         )
     )
         .await?
-        .ok_or_else(|| anyhow::anyhow!("Failed to get version failed."))?;
+        .ok_or_else(|| anyhow::anyhow!("Failed to get version of PostgreSQL."))?;
     
     log::info!("Database version: {}", version.try_get_by_index::<String>(0)?);
     Ok(())

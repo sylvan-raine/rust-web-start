@@ -1,5 +1,6 @@
 use axum::Router;
-use crate::server::ServerState;
+use tower_http::auth::AsyncRequireAuthorizationLayer;
+use crate::{route::middleware::Auth, server::ServerState};
 
 pub mod course;
 pub mod department;
@@ -15,5 +16,6 @@ pub fn build_router() -> Router<ServerState> {
         .nest("/score", score::router())
         .nest("/department", department::router())
         .nest("/course", course::router())
+        .route_layer(AsyncRequireAuthorizationLayer::new(Auth))
         .nest("/login", login::router())
 }

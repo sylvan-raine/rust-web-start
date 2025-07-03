@@ -2,7 +2,10 @@ use axum::{debug_handler, routing, Router};
 use axum::extract::State;
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::IntoCondition;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType, 
+    ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait
+};
 use serde::Deserialize;
 use validator::Validate;
 use crate::entity::prelude::Student;
@@ -28,6 +31,7 @@ pub fn router() -> Router<ServerState> {
 }
 
 /// 路由到 student 模块下的默认界面
+#[debug_handler]
 async fn index() -> AppResult<&'static str> {
     AppResult::Ok("Welcome! This is the index page of student.")
 }
@@ -147,14 +151,8 @@ async fn query(
         .order_by_asc(student::Column::Id)
         .paginate(state.db(), params.page.size);
 
-    let amount = throw_err!(pagination.num_items().await);
+    let total = throw_err!(pagination.num_pages().await);
     let items = throw_err!(pagination.fetch_page(params.page.index - 1).await);
 
-    AppResult::Ok(
-        Page {
-            param: params.page,
-            total: amount / params.page.size + 1,
-            items
-        }
-    )
+    AppResult::Ok(Page { param: params.page, total, items })
 }

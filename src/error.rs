@@ -1,3 +1,4 @@
+use axum::body::Body;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
@@ -11,13 +12,16 @@ pub enum AppError {
     MethodNotAllowed,               // 405 Method Not Allowed
     
     #[error("Sorry, what's your request? 🤔 {0}")]
-    BadQuery(String),               // 400 Bad Request
+    BadRequest(String),               // 400 Bad Request
     
     #[error("Sorry, what's your JSON? 🤔 {0}")]
     BadJson(String),                // 400 Bad Request
     
     #[error("Sorry, what's your path? 🤔 {0}")]
     BadPath(String),                // 400 Bad Request
+
+    #[error("Sorry, but you're not authorized. 😢 {0}")]
+    Unauthorized(String),           // 401 Unauthorized
     
     #[error("Sorry, but check the params. 😢 {0}")]
     UnprocessableEntity(String),    // 422 Unprocessable Entity
@@ -54,28 +58,23 @@ impl AppError {
         match self {
             NotFound(_) => StatusCode::NOT_FOUND,
             MethodNotAllowed => StatusCode::METHOD_NOT_ALLOWED,
-            BadQuery(_) | BadJson(_) | BadPath(_) => StatusCode::BAD_REQUEST,
+            BadRequest(_) | BadJson(_) | BadPath(_) => StatusCode::BAD_REQUEST,
+            Unauthorized(_) => StatusCode::UNAUTHORIZED,
             UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             Database(_) | Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
 
-impl From<sea_orm::DbErr> for AppError {
-    fn from(e: sea_orm::DbErr) -> Self {
-        Self::Database(e.to_string())
-    }
-}
-
-impl From<anyhow::Error> for AppError {
-    fn from(e: anyhow::Error) -> Self {
-        Self::Internal(e.to_string())
+impl Into<AppError> for anyhow::Error {
+    fn into(self) -> AppError {
+        AppError::Internal(self.to_string())
     }
 }
 
 impl From<axum::extract::rejection::QueryRejection> for AppError {
     fn from(e: axum::extract::rejection::QueryRejection) -> Self {
-        Self::BadQuery(e.to_string())
+        Self::BadRequest(e.to_string())
     }
 }
 
@@ -98,5 +97,17 @@ impl From<axum_valid::ValidRejection<AppError>> for AppError {
             axum_valid::ValidRejection::Valid(v) => UnprocessableEntity(v.to_string()),
             axum_valid::ValidRejection::Inner(i) => i,
         }
+    }
+}
+
+impl Into<AppError> for sea_orm::DbErr {
+    fn into(self) -> AppError {
+        AppError::Database(self.to_string())
+    }
+}
+
+impl From<AppError> for axum::http::Response<Body> {
+    fn from(value: AppError) -> Self {
+        value.into_response()
     }
 }

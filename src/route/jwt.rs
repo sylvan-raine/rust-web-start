@@ -34,14 +34,14 @@ pub struct Jwt<T> {
 static ENCODING_KEY: LazyLock<EncodingKey> = LazyLock::new(|| {
     let key = BASE64_STANDARD
         .decode(app_config::get_server().secret_key())
-        .expect("Expected the secrete key a base64 encoded string.");
+        .expect("secret_key 应该是一个以 Base64 编码的字符串.");
     EncodingKey::from_secret(&key)
 });
 
 static DECODING_KEY: LazyLock<DecodingKey> = LazyLock::new(|| {
     let key = BASE64_STANDARD
         .decode(app_config::get_server().secret_key())
-        .expect("Expected the secrete key a base64 encoded string.");
+        .expect("secret_key 应该是一个以 Base64 编码的字符串.");
     DecodingKey::from_secret(&key)
 });
 
@@ -70,7 +70,7 @@ impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
         let res = jsonwebtoken::encode(&header, &self, &ENCODING_KEY);
         match res {
             Ok(res) => {
-                tracing::info!("Generated a JSON Web Toke: {}", res);
+                tracing::info!("生成一个 JSON Web Toke: {}", res);
                 Ok(res)
             },
             Err(err) => Err(anyhow::anyhow!(err)),

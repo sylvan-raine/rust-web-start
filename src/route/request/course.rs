@@ -33,7 +33,7 @@ pub fn router() -> Router<ServerState> {
 
 /// 路由到 course 模块下的默认界面
 async fn index() -> AppResult<&'static str> {
-    AppResult::Ok("Welcome! This is the index page of course.")
+    AppResult::Ok("欢迎! 这是 Course 的首页.")
 }
 
 /// 插入新的课程数据所需要的参数
@@ -61,10 +61,10 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(json): ValidJson<InsertParam>,
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Insert course");
+    tracing::debug!("开始处理: 添加 Course");
     let new_course = json.into_active_model();
     throw_err!(new_course.insert(state.db()).await);
-    AppResult::Ok("Successfully inserted course!".to_string())
+    AppResult::Ok("成功添加一条 Cousrse 记录!".to_string())
 }
 
 /// 处理路由到 course 模块下的 update 请求
@@ -74,13 +74,13 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(json): ValidJson<InsertParam>,
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Update course");
+    tracing::debug!("开始处理: 更新 Course 记录");
     let target = throw_err!(Course::find_by_id(&id).one(state.db()).await);
     if let Some(_) = target {
         throw_err!(json.into_active_model().update(state.db()).await);
-        AppResult::Ok("Successfully updated course!".to_string())
+        AppResult::Ok("成功更新这条 Course 记录!".to_string())
     } else {
-        AppResult::Err(AppError::NotFound("No specified course found!".to_string()))
+        AppResult::Err(AppError::NotFound("相关的 Course 记录不存在!".to_string()))
     }
 }
 
@@ -90,14 +90,14 @@ async fn delete(
     State(state): State<ServerState>, 
     Path(id): Path<String>
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: delete course");
+    tracing::debug!("开始处理: 删除 Course 记录");
     let target = throw_err!(Course::find_by_id(&id).one(state.db()).await);
     if let Some(course) = target {
         throw_err!(course.delete(state.db()).await);
-        tracing::info!("Deleted course, {id}");
-        AppResult::Ok("Successfully deleted course!".to_string())
+        tracing::info!("已删除 id 为 {id} 的 Course 记录");
+        AppResult::Ok("成功删除这条记录!".to_string())
     } else {
-        AppResult::Err(AppError::NotFound("No specified course found!".to_string()))
+        AppResult::Err(AppError::NotFound("未找到要相关的记录!".to_string()))
     }
 }
 
@@ -123,7 +123,7 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParam>,
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Begin to handle: Query course");
+    tracing::debug!("开始处理: Query course");
     let course = Course::find()
         .apply_if(params.department, |rows, keyword| {
             rows.join(JoinType::InnerJoin, department::Relation::Course.def().rev()

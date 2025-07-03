@@ -9,7 +9,7 @@ use crate::server::ServerState;
 /// 并使用传进来的 [Router] 启动服务器
 pub async fn run(router: Router<ServerState>) -> anyhow::Result<()> {
     logger::init();
-    tracing::info!("starting server...");
+    tracing::info!("正在启动服务器...");
     let db = database::init().await?;
     
     let state = ServerState::new(db);

@@ -31,18 +31,18 @@ impl AppConfig {
             )
             .build()    // 启动 I/O 读取配置文件（可能出错）
             .map_err(|e| {
-                tracing::error!("Error initializing config: {e}");
+                tracing::error!("读取配置时出错: {e}");
                 anyhow::anyhow!("{e}")
             })? // 将错误映射为 anyhow 的错误
             .try_deserialize()  // 解析配置文件（可能出错）
             .map_err(|e| {
-                tracing::error!("Error deserializing config: {e}");
-                anyhow::anyhow!("Failed to deserialize app_config.\n{e}")
+                tracing::error!("无法反序列化配置文件: {e}");
+                anyhow::anyhow!("无法反序列化配置文件.\n{e}")
             })?;   // 将错误映射为 anyhow 的错误
         
         let server_config = &configuration.server;
         if !server_config.ipv6_enabled() ^ server_config.ipv4_enabled() {
-            panic!("IPv6 and IPv4 are not allowed to be turned [on/off] at the same time.")
+            panic!("无法同时支持 IPv4 和 IPv6 监听.")
         }
         Ok(configuration)
     }

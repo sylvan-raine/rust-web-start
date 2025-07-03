@@ -21,11 +21,11 @@ pub async fn start(router: Router<ServerState>, state: ServerState) -> anyhow::R
     
     if app_config::get_server().ipv6_enabled() {
         let listener_v6 = TcpListener::bind((Ipv6Addr::UNSPECIFIED, port)).await?;
-        tracing::info!("listening on {}.", listener_v6.local_addr()?);
+        tracing::info!("服务器正在监听发往 {} 的请求.", listener_v6.local_addr()?);
         axum::serve(listener_v6, service).await?;
     } else {
         let listener_v4 = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
-        tracing::info!("listening on {}.", listener_v4.local_addr()?);
+        tracing::info!("服务器正在监听发往 {} 的请求.", listener_v4.local_addr()?);
         axum::serve(listener_v4, service).await?;
     }
     
@@ -39,7 +39,7 @@ fn build_router(router: Router<ServerState>, state: ServerState) -> Router {
             let method = req.method().to_string();
             let uri = req.uri().to_string();
             let id = BASE64_STANDARD_NO_PAD.encode(uuid::Uuid::new_v4());   // 使用 base64 编码的 uuid 作为请求 id
-            tracing::info_span!("http request", id, uri, method)
+            tracing::info_span!("HTTP 请求", id, uri, method)
         })
         .on_failure(())
         .on_request(())

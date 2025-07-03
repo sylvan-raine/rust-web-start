@@ -30,7 +30,7 @@ pub fn router() -> Router<ServerState> {
 /// 路由到 department 模块下的默认界面
 #[debug_handler]
 async fn index() -> AppResult<&'static str> {
-    AppResult::Ok("Welcome! This is the index page of department.")
+    AppResult::Ok("欢迎! 这是 Department 的首页.")
 }
 
 /// 对 department 进行更改所需的参数
@@ -55,9 +55,9 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Insert department");
+    tracing::debug!("开始处理: 添加 Department");
     throw_err!(params.into_active_model().insert(state.db()).await);
-    AppResult::Ok("Successfully inserted department!".to_string())
+    AppResult::Ok("成功添加一条 Department 记录!".to_string())
 }
 
 /// 路由到 department 模块下的 update 界面
@@ -67,13 +67,13 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Update department");
+    tracing::debug!("开始处理: 修改 Department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
     if let Some(_) = target {
         throw_err!(params.into_active_model().update(state.db()).await);
-        AppResult::Ok("Successfully updated department!".to_string())    
+        AppResult::Ok("成功修改一条 Department 数据!".to_string())
     } else {
-        AppResult::Err(AppError::NotFound("No specified department found!".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Department 记录!".to_string()))
     }
 }
 
@@ -83,14 +83,14 @@ async fn delete(
     State(state): State<ServerState>,
     Path(id): Path<String>,
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Delete department");
+    tracing::debug!("开始处理: 删除 Department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
     if let Some(department) = target {
         throw_err!(department.delete(state.db()).await);
-        tracing::info!("Deleted department, {id}");
-        AppResult::Ok(format!("Successfully deleted department with id: {id}."))
+        tracing::info!("已删除一条 id 为 {id} 的 Department 记录");
+        AppResult::Ok(format!("成功删除一条 id 为 {id} 的 Department 记录!"))
     } else {
-        AppResult::Err(AppError::NotFound("No specified department found!".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Department 记录!".to_string()))
     }
 }
 
@@ -117,7 +117,7 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Begin to handle: Query department");
+    tracing::debug!("开始处理: 查询 Department");
     let pagination = Department::find()
         .apply_if(params.keyword.as_ref(), |rows, keyword| {
             rows.filter(department::Column::Name.contains(keyword))

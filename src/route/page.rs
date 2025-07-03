@@ -14,11 +14,12 @@ pub struct Page<T: Serialize> {
 #[derive(Serialize, Deserialize, Validate, Clone, Copy)]
 pub struct PageParam {
     /// 代表现在是第几页
-    #[validate(range(min = 1, message = "Page index should be more than or equal to 1."))]
+    #[validate(range(min = 1, message = "页码应大于等于 1."))]
     #[serde(default = "PageParam::default_index", deserialize_with = "from_str")]
     pub index: u64,
+    
     /// 代表一页能容纳多少条数据
-    #[validate(range(min = 1, max = 100, message = "The amount of items in one page should be at least 1 and at most 100."))]
+    #[validate(range(min = 1, max = 100, message = "每页所含信息应在 1 条至 100 条之间."))]
     #[serde(default = "PageParam::default_size", deserialize_with = "from_str")]
     pub size: u64,
 }

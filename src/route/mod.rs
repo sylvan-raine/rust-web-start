@@ -18,7 +18,7 @@ pub fn build_router() -> Router<ServerState> {
 
 async fn not_found() -> AppResult<()> {
     tracing::warn!("Not Found");
-    AppResult::Err(AppError::NotFound("No such page you've queried!".to_string()))
+    AppResult::Err(AppError::NotFound(String::new()))
 }
 
 async fn not_allowed() -> AppResult<()> {

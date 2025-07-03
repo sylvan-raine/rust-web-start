@@ -5,31 +5,31 @@ use serde::Serialize;
 
 #[derive(Debug, thiserror::Error, Serialize)]
 pub enum AppError {
-    #[error("Server lost it unintentionally. 😢 {0}")]
+    #[error("服务器好像把它弄丢了. 😢 {0}")]
     NotFound(String),               // 404 Not Found
     
-    #[error("Why you do this to me! 🥲")]
+    #[error("不要这样对我! 🥲")]
     MethodNotAllowed,               // 405 Method Not Allowed
     
-    #[error("Sorry, what's your request? 🤔 {0}")]
-    BadRequest(String),               // 400 Bad Request
+    #[error("你这请求是啥啊? 🤔 {0}")]
+    BadRequest(String),             // 400 Bad Request
     
-    #[error("Sorry, what's your JSON? 🤔 {0}")]
+    #[error("你这 JSON 不对吧? 🤔 {0}")]
     BadJson(String),                // 400 Bad Request
     
-    #[error("Sorry, what's your path? 🤔 {0}")]
+    #[error("你的路径好像不对? 🤔 {0}")]
     BadPath(String),                // 400 Bad Request
 
-    #[error("Sorry, but you're not authorized. 😢 {0}")]
+    #[error("不是你谁啊, 先登录. 😢 {0}")]
     Unauthorized(String),           // 401 Unauthorized
     
-    #[error("Sorry, but check the params. 😢 {0}")]
+    #[error("你请求参数取值好像不对, 服务器没法处理. 😢 {0}")]
     UnprocessableEntity(String),    // 422 Unprocessable Entity
     
-    #[error("It's hard to tell you I broke down... 😶 {0}")]
+    #[error("坏了, 服务器出问题了... 😶 {0}")]
     Internal(String),               // 500 服务器内部错误
     
-    #[error("No... The database can't handle this. 😍")]
+    #[error("数据库应该出问题了. 😍")]
     Database(String),               // 500 数据库错误
 }
 

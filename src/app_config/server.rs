@@ -27,7 +27,7 @@ impl ServerConfig {
     }
 
     pub fn secret_key(&self) -> &str {
-        // 默认值 default secret key of web-starter
+        // 默认值为 "default secret key of web-starter"
         self.secret_key.as_deref().unwrap_or("ZGVmYXVsdCBzZWNyZXQga2V5IG9mIHdlYi1zdGFydGVy")
     }
 }

@@ -33,7 +33,7 @@ pub fn router() -> Router<ServerState> {
 /// 路由到 student 模块下的默认界面
 #[debug_handler]
 async fn index() -> AppResult<&'static str> {
-    AppResult::Ok("Welcome! This is the index page of student.")
+    AppResult::Ok("欢迎! 这是 Student 的首页.")
 }
 
 /// 路由到 student 模块下的 insert 模块时所需的参数
@@ -63,10 +63,10 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Insert student");
+    tracing::debug!("开始处理: 添加 Student");
     let new_student = params.into_active_model();
     let _result = throw_err!(Student::insert(new_student).exec(state.db()).await);
-    AppResult::Ok("Successfully inserted a student".to_string())
+    AppResult::Ok("成功添加一条 Student 记录!".to_string())
 }
 
 #[debug_handler]
@@ -75,13 +75,13 @@ async fn update(
     Path(id): Path<String>,
     ValidJson(params): ValidJson<InsertParams>
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Update student");
+    tracing::debug!("开始处理: 更新 Student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
     if let Some(_) = target {
         throw_err!(params.into_active_model().update(state.db()).await);
-        AppResult::Ok(format!("Successfully updated {id}"))
+        AppResult::Ok(format!("成功更新一条 id 为 {id} 的 Student 记录!"))
     } else {
-        AppResult::Err(AppError::NotFound("No specified student found".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Student 记录".to_string()))
     }
 }
 
@@ -90,14 +90,14 @@ async fn delete(
     State(state): State<ServerState>,
     Path(id): Path<String>,
 ) -> AppResult<String> {
-    tracing::debug!("Begin to handle: Delete student");
+    tracing::debug!("开始处理: 删除 student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
     if let Some(student) = target {
         throw_err!(student.delete(state.db()).await);
-        tracing::info!("Deleted student, id: {id}");
-        AppResult::Ok(format!("Successfully deleted student with id: {id}."))    
+        tracing::info!("已删除 id 为 {id} 的 Student");
+        AppResult::Ok(format!("成功删除 id 为 {id} 的学生!"))    
     } else {
-        AppResult::Err(AppError::NotFound("No specified student found".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Student 记录".to_string()))
     }
 }
 
@@ -128,7 +128,7 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Begin to handle: Query student");
+    tracing::debug!("开始处理: Query student");
     let pagination = Student::find()
         .apply_if(params.department, |rows, keyword| {
             rows.join(JoinType::InnerJoin, department::Relation::Student.def().rev()

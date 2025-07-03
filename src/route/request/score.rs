@@ -32,7 +32,7 @@ pub fn router() -> Router<ServerState> {
 /// 路由到 score 模块下的默认界面
 #[debug_handler]
 async fn index() -> AppResult<&'static str> {
-    AppResult::Ok("Welcome! This is the index page of score.")
+    AppResult::Ok("欢迎!这是 Score 的首页!")
 }
 
 #[derive(Validate, Deserialize, DeriveIntoActiveModel)]
@@ -52,9 +52,10 @@ async fn insert(
     State(state): State<ServerState>,
     ValidJson(json): ValidJson<InsertParams>
 ) -> AppResult<String> {
+    tracing::debug!("开始处理: 添加 Score");
     throw_err!(json.into_active_model().insert(state.db()).await);
-    tracing::debug!("Created score");
-    AppResult::Ok("Succesfully inserted score!".to_string())
+    tracing::debug!("创建一条 Score 记录.");
+    AppResult::Ok("成功添加 Score 记录!".to_string())
 }
 
 #[debug_handler]
@@ -63,13 +64,14 @@ async fn update(
     Path((stu_id, course_id)): Path<(String, String)>,
     ValidJson(json): ValidJson<InsertParams>
 ) -> AppResult<Model> {
+    tracing::debug!("开始处理: 更新 Score");
     let target = throw_err!(Score::find_by_id((stu_id, course_id)).one(state.db()).await);
     if let Some(score) = target {
         throw_err!(json.into_active_model().update(state.db()).await);
-        tracing::debug!("Updated score");
+        tracing::debug!("成功更新了一条 Score 记录.");
         AppResult::Ok(score)
     } else {
-        AppResult::Err(AppError::NotFound("No such score specified.".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Score 记录.".to_string()))
     }
 }
 
@@ -78,12 +80,13 @@ async fn delete(
     State(state): State<ServerState>,
     Path((stu_id, course_id)): Path<(String, String)>
 ) -> AppResult<String> {
+    tracing::debug!("开始处理: 删除 Score");
     let target = throw_err!(Score::find_by_id((stu_id.clone(), course_id.clone())).one(state.db()).await);
     if let Some(score) = target {
         throw_err!(score.delete(state.db()).await);
-        AppResult::Ok(format!("Successfully deleted score, student id: {stu_id}, course_id: {course_id}."))    
+        AppResult::Ok(format!("成功删除一条 Score 记录, student_id 为 {stu_id}, course_id 为 {course_id}."))    
     } else {
-        AppResult::Err(AppError::NotFound("No such score specified.".to_string()))
+        AppResult::Err(AppError::NotFound("没有相关的 Score 记录.".to_string()))
     }
 }
 
@@ -93,6 +96,7 @@ struct QueryParams {
 
     course: Option<String>,
 
+    #[validate(nested)]
     #[serde(flatten)]
     page: PageParam
 }
@@ -103,7 +107,7 @@ async fn query(
     State(state): State<ServerState>,
     ValidQuery(params): ValidQuery<QueryParams>
 ) -> AppResult<Page<Model>> {
-    tracing::debug!("Begin to handle: Query score");
+    tracing::debug!("开始处理: 查询 score");
     let pagination = Score::find()
         .apply_if(params.student, |rows, keyword| {
             rows.join(JoinType::InnerJoin, student::Relation::Score.def().rev()

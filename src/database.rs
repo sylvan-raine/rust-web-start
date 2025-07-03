@@ -27,10 +27,10 @@ pub async fn init() -> anyhow::Result<DatabaseConnection> {
         .sqlx_logging(false);
     
     let conn = Database::connect(options).await.map_err(|e| {
-        tracing::error!("Error connecting to database.");
+        tracing::error!("无法连接至数据库!");
         anyhow::anyhow!("{e}")
     })?;
-    tracing::info!("Database connection established.");
+    tracing::info!("已与数据库建立连接.");
     log_database_version(&conn).await?;
     
     Ok(conn)
@@ -44,8 +44,8 @@ async fn log_database_version(db: &DatabaseConnection) -> anyhow::Result<()> {
         )
     )
         .await?
-        .ok_or_else(|| anyhow::anyhow!("Failed to get version of PostgreSQL."))?;
+        .ok_or_else(|| anyhow::anyhow!("无法获取 PostgreSQL 的版本号."))?;
     
-    log::info!("Database version: {}", version.try_get_by_index::<String>(0)?);
+    log::info!("数据库版本: {}", version.try_get_by_index::<String>(0)?);
     Ok(())
 }

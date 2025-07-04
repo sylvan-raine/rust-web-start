@@ -3,6 +3,13 @@ name = "web-start"
 version = "0.1.0"
 edition = "2024"
 
+[profile.release]
+lto = true
+opt-level = 2
+codegen-units = 8
+overflow-checks = false
+debug-assertions = false
+
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.8", features = ["macros"] }

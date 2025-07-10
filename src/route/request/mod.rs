@@ -7,6 +7,7 @@ pub mod index;
 pub mod login;
 pub mod score;
 pub mod student;
+pub mod resource;
 
 pub fn build_router() -> Router<ServerState> {
     Router::new()
@@ -17,4 +18,5 @@ pub fn build_router() -> Router<ServerState> {
         .nest("/course", course::router())
         .route_layer(&*AUTH_LAYER)
         .nest("/login", login::router())
+        .nest("/resource", resource::router())
 }

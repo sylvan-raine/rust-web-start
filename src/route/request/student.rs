@@ -14,7 +14,6 @@ use crate::entity::student::Model;
 use crate::entity::student::ActiveModel;
 use crate::error::AppError;
 use crate::route::extract::{Path, ValidJson, ValidQuery};
-use crate::route::not_found;
 use crate::route::page::{Page, PageParam};
 use crate::route::result::AppResult;
 use crate::server::ServerState;
@@ -27,7 +26,6 @@ pub fn router() -> Router<ServerState> {
         .route("/insert", routing::post(insert))
         .route("/update/{id}", routing::put(update))
         .route("/delete/{id}", routing::delete(delete))
-        .fallback(not_found)
 }
 
 /// 路由到 student 模块下的默认界面

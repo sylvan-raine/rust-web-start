@@ -1,0 +1,141 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right bottom, rgb(107, 156, 255), rgb(151, 255, 243, 1));
+    z-index: 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(20px);
+    z-index: 5;
+}
+
+button {
+    display: block;
+    backdrop-filter: blur(50px);
+    background-color: white;
+    border: solid, rgb(175, 201, 201);
+    border-radius: 50px;
+    text-align: center;
+    transition: all 0.5s;
+    outline-style: none;
+}
+
+button:hover {
+    border: solid, rgb(148, 217, 228);
+}
+
+button:active {
+    border: solid, rgb(58, 190, 251);
+}
+
+#login-button {
+    position: absolute;
+    right: 60px;
+    top: 60px;
+    width: 150px;
+    font-size: larger;
+    height: 60px;
+    z-index: 2;
+}
+
+.center-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+#rust-logo-container {
+    z-index: 1;
+}
+
+#rust-logo {
+    display: block;
+    width: 800px;
+    padding: 0;
+    position: absolute;
+    margin: 0 auto;
+}
+
+.login {
+    background-color: white;
+    border-radius: 40px;
+    z-index: 10;
+    position: relative;
+}
+
+#login-window {
+    display: flex;
+    flex-direction: column;
+    height: 300px;
+    width: 500px;
+    z-index: 10;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+#login-window * {
+    z-index: 10;
+}
+
+#cancel-button {
+    font-size: xx-large;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    height: 40px;
+    z-index: 11;
+    width: 40px;
+}
+
+.user-info {
+    height: 30px;
+    width: 260px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info input {
+    height: 30px;
+}
+
+.user-info label {
+    height: 30px;
+    line-height: 30px;
+}
+
+#handin-information {
+    width: 80px;
+    height: 30px;
+    margin-top: 40px;
+}

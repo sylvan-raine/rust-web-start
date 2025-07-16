@@ -42,6 +42,7 @@ async fn login(
     State(state): State<ServerState>,
     ValidJson(param): ValidJson<Params>
 ) -> AppResult<String> {
+    tracing::info!("{}", param.id);
     let users = Users::find_by_id(param.id)
         .one(state.db())
         .await;

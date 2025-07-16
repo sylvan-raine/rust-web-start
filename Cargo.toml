@@ -22,7 +22,7 @@ sea-orm = { version = "1.1", features = ["chrono", "debug-print", "sqlx-postgres
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"
 tokio = { version = "1.45", features = ["full"] }
-tower-http = { version = "0.6", features = ["trace", "timeout", "cors", "limit", "normalize-path", "auth"] }
+tower-http = { version = "0.6", features = ["trace", "timeout", "cors", "limit", "normalize-path", "auth", "fs"] }
 tracing = { version = "0.1", features = ["async-await"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "chrono"] }
 uuid = { version = "1.17", features = ["v4"] }

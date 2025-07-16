@@ -13,7 +13,6 @@ use crate::entity::score::{ActiveModel, Model};
 use crate::entity::{course, student};
 use crate::error::AppError;
 use crate::route::extract::{ValidJson, ValidQuery};
-use crate::route::not_found;
 use crate::route::page::{Page, PageParam};
 use crate::route::result::AppResult;
 use crate::server::ServerState;
@@ -26,7 +25,6 @@ pub fn router() -> Router<ServerState> {
         .route("/insert", routing::post(insert))
         .route("/update/{stu_id}/{course_id}", routing::put(update))
         .route("/delete/{stu_id}/{course_id}", routing::delete(delete))
-        .fallback(not_found)
 }
 
 /// 路由到 score 模块下的默认界面

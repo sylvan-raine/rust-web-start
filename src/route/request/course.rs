@@ -5,7 +5,6 @@ use crate::entity::department;
 use crate::entity::prelude::Course;
 use crate::error::AppError;
 use crate::route::extract::{Path, ValidJson, ValidQuery};
-use crate::route::not_found;
 use crate::route::page::{Page, PageParam};
 use crate::route::result::AppResult;
 use crate::server::ServerState;
@@ -28,7 +27,6 @@ pub fn router() -> Router<ServerState> {
         .route("/insert", routing::post(insert))
         .route("/update", routing::put(update))
         .route("/delete", routing::delete(delete))
-        .fallback(not_found)
 }
 
 /// 路由到 course 模块下的默认界面

@@ -1,13 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>web-starter</title>
-    <link rel="stylesheet" href="http://localhost:8080/resource/txt/style.css"/>
+    <link rel="stylesheet" href="css/index.css"/>
 </head>
 <body>
-    <img src="http://localhost:8080/resource/bin/rust-logo.png" alt="没加载出来" class="ico"/>
-    <script src="http://localhost:8080/resource/txt/js.js"></script>
+    <div class="background"></div>
+    <div class="overlay hidden"></div>
+
+    <button id="login-button">点击登录</button>
+
+    <div class="center-container">
+        <img src="pic/rust-logo.svg" alt="Rust logo" class="ico" id="rust-logo">
+
+        <div class="login hidden" id="login-window">
+            <button class="login" id="cancel-button">&times;</button>
+            <div class="user-info">
+                <label for="user-id" class="login ">用户名: </label>
+                <input class="login " id="user-id" name="id" type="text" placeholder="请输入您的用户id">
+            </div>
+            <div class="user-info">
+                <label for="user-passwd" class="login">密码  : </label>
+                <input class="login " id="user-passwd" name="password" type="password" placeholder="请输入您的密码">
+            </div>
+            <button class="login" id="handin-information">提交</button>
+        </div>
+
+    </div>
+    
+    <script src="js/index.js" type="module"></script>
 </body>
 </html>

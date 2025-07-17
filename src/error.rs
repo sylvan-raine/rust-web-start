@@ -38,15 +38,13 @@ impl IntoResponse for AppError {
         #[derive(Serialize)]
         struct ResponseStruct {
             status_code: u16,
-            status: String,
-            error: AppError
+            message: String,
         }
         
         (self.status_code(), axum::Json(
             ResponseStruct {
                 status_code: self.status_code().as_u16(),
-                status: self.status_code().to_string(),
-                error: self
+                message: self.to_string(),
             }
         )).into_response()
     }

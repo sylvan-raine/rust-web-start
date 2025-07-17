@@ -44,7 +44,7 @@ impl AsyncAuthorizeRequest<Body> for Auth {
                     .map_err(|e| AppError::BadRequest(format!("找到一个无法被现有编码支持的字符, 详细信息: {e}")))?;
 
                 let token = auth_header.strip_prefix("Bearer ")
-                    .ok_or_else(|| AppError::BadRequest("authorization 字段应该以 \"Bearer: \" 开头".to_string()))?;
+                    .ok_or_else(|| AppError::BadRequest("Authorization 字段应该以 \"Bearer \" 开头".to_string()))?;
 
                 let usr_ident = Jwt::<UserIdent>::decode_with(token, &DEFAULT_VALIDATION)
                     .map_err(|e| AppError::Unauthorized(format!("JWT 校验未通过, 详细信息: {e}")))?;

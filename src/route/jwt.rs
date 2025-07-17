@@ -55,6 +55,9 @@ impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
         Self::new(load, &DEFAULT_EXPIRATION).encode_with(Algorithm::HS256)
     }
 
+    /// 创建一个 jwt, 时间将被转化为秒级时间戳
+    /// - `load: T`: 负载
+    /// - `ttl: &Duration`: 此 jwt 的生存时长, 默认为 12 小时
     pub fn new(load: T, ttl: &Duration) -> Self {
         Self {
             load,

@@ -1,6 +1,6 @@
 "use strict";
 
-import { get_token, JWT_KEY } from "./auth.js";
+import { login, token_legal } from "./auth.js";
 
 const overlay = document.querySelector(".overlay");
 const handin_btn = document.querySelector("#handin-information");
@@ -8,17 +8,25 @@ const login_btn = document.querySelector("#login-button");
 const login_window = document.querySelector("#login-window");
 const cancel_button = document.querySelector("#cancel-button");
 
-
-handin_btn.addEventListener("click", try_login);
+handin_btn.addEventListener("click", handle_login);
 login_btn.addEventListener("click", open_login_window);
 cancel_button.addEventListener("click", close_login_window);
 document.addEventListener("DOMContentLoaded", suggest_login);
 
-async function try_login() {
-    const success = await handin_information();
-    if (success) {
+async function handle_login() {
+    const id = document.getElementById("user-id").value;
+    const password = document.getElementById("user-passwd").value;
+
+    const success_callback = () => {
+        alert("您已成功登录!");
         close_login_window();
-    }
+    };
+
+    const failure_callback = () => alert("登陆失败! 请重试!");
+
+    login(id, password)
+        .then(success_callback, failure_callback)
+        .catch(() => { alert("登陆失败! 请重试!"); })
 }
 
 function open_login_window() {
@@ -31,42 +39,8 @@ function close_login_window() {
     login_window.classList.add("hidden");
 }
 
-async function handin_information() {
-    const id = document.getElementById("user-id").value;
-    const password = document.getElementById("user-passwd").value;
-
-    const data = {
-        id, password
-    };
-
-    const json = JSON.stringify(data);
-
-    try {
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: json
-        });
-
-        if (response.ok) {
-            const token = await response.json();
-            localStorage.setItem(JWT_KEY, token);
-            alert("您已成功登录!");
-            return true;
-        } else {
-            alert("登录失败, 请重新输入您的账号密码");
-            return false;
-        }
-    } catch (error) {
-        alert(`错误 ${error}`);
-        return false;
-    }
-}
-
 async function suggest_login() {
-    if (get_token()) {
+    if (token_legal()) {
         close_login_window();
     } else {
         open_login_window();

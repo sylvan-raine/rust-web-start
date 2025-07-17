@@ -51,8 +51,8 @@ pub const DEFAULT_EXPIRATION: LazyLock<Duration> = LazyLock::new(|| Duration::fr
 impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
 
     /// 快捷方式，过期时间为 12 小时，加密算法为 HS256
-    pub fn generate(load: T) -> anyhow::Result<String> {
-        Ok(Self::new(load, &DEFAULT_EXPIRATION).encode_with(Algorithm::HS256)?)
+    pub fn generate(load: T) -> String {
+        Self::new(load, &DEFAULT_EXPIRATION).encode_with(Algorithm::HS256)
     }
 
     pub fn new(load: T, ttl: &Duration) -> Self {
@@ -65,16 +65,15 @@ impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
         }
     }
 
-    pub fn encode_with(self, alg: Algorithm) -> anyhow::Result<String> {
+    /// 由于使用 base 64 解码后的东西是一个二进制序列, 所以使用 HMAC 算法组 (哈希算法组)
+    /// `alg` 参数仅接受 HMAC 算法组的算法
+    pub fn encode_with(self, alg: Algorithm) -> String {
         let header = Header::new(alg);
-        let res = jsonwebtoken::encode(&header, &self, &ENCODING_KEY);
-        match res {
-            Ok(res) => {
-                tracing::info!("生成一个 JSON Web Toke: {}", res);
-                Ok(res)
-            },
-            Err(err) => Err(anyhow::anyhow!(err)),
-        }
+        // 查看源码可知, encode 函数仅在 header.alg.algorithmfamily 和 key 的 algorithm family不一样的时候
+        // 此处: Encoding Key 和 Decoding Key 均为二进制序列, 不可能抛出异常, 故直接 unwrap
+        let res = jsonwebtoken::encode(&header, &self, &ENCODING_KEY).unwrap();
+        tracing::info!("生成一个 JSON Web Toke");
+        res
     }
 
     /// 通过 token 解码出 load，val 参数为校验配置，见 [`jsonwebtoken::Validation`]
@@ -111,7 +110,7 @@ mod test {
     fn test_jwt_round_trip() {
         let load = TestLoad::default();
         let jwt = Jwt::new(load.clone(), &Duration::from_secs(60));
-        let token = jwt.encode_with(Algorithm::HS256).unwrap();
+        let token = jwt.encode_with(Algorithm::HS256);
         let decoded = Jwt::<TestLoad>::decode_with(&token, &Validation::new(Algorithm::HS256)).unwrap();
         println!("{token}");
         assert_eq!(load, decoded);
@@ -121,7 +120,7 @@ mod test {
     fn test_jwt_expired() {
         let load = TestLoad::default();
         let jwt = Jwt::new(load.clone(), &Duration::from_secs(1));
-        let token = jwt.encode_with(Algorithm::HS256).unwrap();
+        let token = jwt.encode_with(Algorithm::HS256);
         let decoded = Jwt::<TestLoad>::decode_with(&token, &DEFAULT_VALIDATION);
         println!("{token}");
         assert!(!decoded.is_err());

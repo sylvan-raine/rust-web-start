@@ -29,7 +29,7 @@ struct Params {
     password: String,
 }
 
-/// 登陆完成后返回给浏览器的信息
+/// 登陆完成后返回给浏览器的信息, 这将被存储在 jwt 中
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserIdent {
     pub id: String,
@@ -42,7 +42,7 @@ async fn login(
     State(state): State<ServerState>,
     ValidJson(param): ValidJson<Params>
 ) -> AppResult<String> {
-    tracing::info!("{}", param.id);
+    tracing::info!("有用户试图登录! 登录账号: {}", param.id);
     let users = Users::find_by_id(param.id)
         .one(state.db())
         .await;
@@ -51,12 +51,12 @@ async fn login(
         Some(usr) => {
             if usr.password == param.password {
                 tracing::info!("登录成功!");
-                let payback = UserIdent {
+                let usr_ident = UserIdent {
                     id: usr.id,
                     name: usr.name,
                 };
-                let token = Jwt::generate(payback);
-                return AppResult::Ok(throw_err!(token));
+                let token = Jwt::generate(usr_ident);
+                return AppResult::Ok(token);
             } else {
                 tracing::warn!("此用户的账号与密码不匹配!")
             }

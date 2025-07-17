@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT认证系统</title>
+    <link rel="stylesheet" href="css/ai.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h1>JWT认证系统</h1>
+            <p class="description">
+                JSON Web Tokens (JWT) 是一种开放标准 (RFC 7519)，用于在各方之间安全地传输信息。本演示展示了如何在浏览器端检查JWT令牌是否过期。
+            </p>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">✓</div>
+                    <div>客户端JWT过期检查</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✓</div>
+                    <div>安全的本地存储</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✓</div>
+                    <div>自动令牌刷新</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✓</div>
+                    <div>API请求拦截</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="tabs">
+                <div class="tab active" data-tab="login">登录</div>
+                <div class="tab" data-tab="dashboard">仪表盘</div>
+                <div class="tab" data-tab="token">令牌信息</div>
+            </div>
+
+            <div id="loginPanel" class="panel active">
+                <h2>用户登录</h2>
+                <div class="form-container">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" placeholder="输入用户名" value="admin">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" placeholder="输入密码" value="password123">
+                    </div>
+                    <div class="form-group">
+                        <label for="expiresIn">令牌有效期 (秒)</label>
+                        <input type="number" id="expiresIn" value="30">
+                    </div>
+                    <button id="loginBtn">登录</button>
+                    <div class="token-info" id="loginStatus">
+                        请登录以查看令牌信息
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboardPanel" class="panel">
+                <h2>欢迎访问仪表盘</h2>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-icon">📊</div>
+                        <h3>数据分析</h3>
+                        <p>1,254</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">👥</div>
+                        <h3>用户数量</h3>
+                        <p>248</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">💰</div>
+                        <h3>总收入</h3>
+                        <p>$42,560</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">✅</div>
+                        <h3>完成率</h3>
+                        <p>92%</p>
+                    </div>
+                </div>
+                <div class="token-actions">
+                    <button id="refreshBtn">刷新令牌</button>
+                    <button id="logoutBtn" class="btn-logout">退出登录</button>
+                </div>
+            </div>
+
+            <div id="tokenPanel" class="panel">
+                <h2>JWT令牌信息</h2>
+                <div class="token-info" id="tokenDetails">
+                    请登录以查看令牌信息
+                </div>
+                <div class="jwt-structure">
+                    <h3>JWT结构</h3>
+                    <div class="jwt-part jwt-header">
+                        <div class="highlight">Header</div>
+                        <p>包含令牌类型和签名算法</p>
+                        <pre>{
+  "alg": "HS256",
+  "typ": "JWT"
+}</pre>
+                    </div>
+                    <div class="jwt-part jwt-payload">
+                        <div class="highlight">Payload</div>
+                        <p>包含声明（claims）如用户信息和过期时间（exp）</p>
+                        <pre>{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022,
+  "exp": 1516239322
+}</pre>
+                    </div>
+                    <div class="jwt-part jwt-signature">
+                        <div class="highlight">Signature</div>
+                        <p>使用服务器密钥对header和payload进行签名</p>
+                        <pre>HMACSHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+  secret
+)</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/ai.js"></script>
+</body>
+
+</html>

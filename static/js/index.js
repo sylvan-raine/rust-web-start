@@ -53,13 +53,14 @@ async function handin_information() {
         if (response.ok) {
             const token = await response.json();
             localStorage.setItem(JWT_KEY, token);
+            alert("您已成功登录!");
             return true;
         } else {
-            console.log("登录失败", response);
+            alert("登录失败, 请重新输入您的账号密码");
             return false;
         }
     } catch (error) {
-        console.error('错误:', error);
+        alert(`错误 ${error}`);
         return false;
     }
 }

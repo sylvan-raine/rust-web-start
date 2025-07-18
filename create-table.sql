@@ -50,9 +50,9 @@ SELECT s.name, s.id, sc.score, c.name, c.id, sc.record_date
 FROM student s, score sc, course c
 WHERE s.id = sc.stu_id AND c.id = sc.course_id;
 
-DROP VIEW student_score_course;
-DROP TABLE score;
-DROP TABLE student;
-DROP TABLE course;
-DROP TABLE department;
-DROP TABLE users;
+-- DROP VIEW student_score_course;
+-- DROP TABLE score;
+-- DROP TABLE student;
+-- DROP TABLE course;
+-- DROP TABLE department;
+-- DROP TABLE users;

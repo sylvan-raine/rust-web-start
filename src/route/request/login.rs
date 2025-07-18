@@ -1,8 +1,3 @@
-use axum::{debug_handler, routing, Extension, Router};
-use axum::extract::State;
-use sea_orm::EntityTrait;
-use serde::{Deserialize, Serialize};
-use validator::Validate;
 use crate::entity::prelude::Users;
 use crate::entity::users::Model;
 use crate::error::AppError;
@@ -12,6 +7,11 @@ use crate::route::middleware::AUTH_LAYER;
 use crate::route::result::AppResult;
 use crate::server::ServerState;
 use crate::throw_err;
+use axum::extract::State;
+use axum::{Extension, Router, debug_handler, routing};
+use sea_orm::EntityTrait;
+use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 pub fn router() -> Router<ServerState> {
     Router::new()
@@ -40,12 +40,10 @@ pub struct UserIdent {
 #[tracing::instrument(name = "[登录]", skip_all, fields(account = %param.id))]
 async fn login(
     State(state): State<ServerState>,
-    ValidJson(param): ValidJson<Params>
+    ValidJson(param): ValidJson<Params>,
 ) -> AppResult<String> {
     tracing::info!("有用户试图登录! 登录账号: {}", param.id);
-    let users = Users::find_by_id(param.id)
-        .one(state.db())
-        .await;
+    let users = Users::find_by_id(param.id).one(state.db()).await;
 
     match throw_err!(users) {
         Some(usr) => {
@@ -60,7 +58,7 @@ async fn login(
             } else {
                 tracing::warn!("此用户的账号与密码不匹配!")
             }
-        },
+        }
         _ => {
             tracing::info!("此用户账号不存在!")
         }
@@ -71,7 +69,7 @@ async fn login(
 #[debug_handler]
 async fn info(
     State(state): State<ServerState>,
-    Extension(usr): Extension<UserIdent>
+    Extension(usr): Extension<UserIdent>,
 ) -> AppResult<Model> {
     let entity = Users::find_by_id(usr.id)
         .one(state.db())

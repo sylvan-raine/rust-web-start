@@ -1,25 +1,17 @@
 use std::{
-    sync::LazyLock, 
-    time::{Duration, SystemTime, UNIX_EPOCH}
+    sync::LazyLock,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{Engine, prelude::BASE64_STANDARD};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
 use crate::app_config;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct JwtClaims {
     exp: u64,
-}
-
-impl Default for JwtClaims {
-    fn default() -> Self {
-        Self {
-            exp: 0,
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -45,11 +37,11 @@ static DECODING_KEY: LazyLock<DecodingKey> = LazyLock::new(|| {
     DecodingKey::from_secret(&key)
 });
 
-pub const DEFAULT_VALIDATION: LazyLock<Validation> = LazyLock::new(|| Validation::default());
-pub const DEFAULT_EXPIRATION: LazyLock<Duration> = LazyLock::new(|| Duration::from_secs(12 * 60 * 60));
+pub static DEFAULT_VALIDATION: LazyLock<Validation> = LazyLock::new(Validation::default);
+pub static DEFAULT_EXPIRATION: LazyLock<Duration> =
+    LazyLock::new(|| Duration::from_secs(12 * 60 * 60));
 
 impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
-
     /// 快捷方式，过期时间为 12 小时，加密算法为 HS256
     pub fn generate(load: T) -> String {
         Self::new(load, &DEFAULT_EXPIRATION).encode_with(Algorithm::HS256)
@@ -62,9 +54,12 @@ impl<T: Serialize + for<'de> Deserialize<'de>> Jwt<T> {
         Self {
             load,
             claims: JwtClaims {
-                exp: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + ttl.as_secs(),
-                .. JwtClaims::default()
-            }
+                exp: SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs()
+                    + ttl.as_secs(),
+            },
         }
     }
 
@@ -97,14 +92,14 @@ mod test {
     #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
     struct TestLoad {
         name: String,
-        id: u32
+        id: u32,
     }
 
     impl Default for TestLoad {
         fn default() -> Self {
             Self {
                 name: "test".to_string(),
-                id: 42
+                id: 42,
             }
         }
     }
@@ -114,7 +109,8 @@ mod test {
         let load = TestLoad::default();
         let jwt = Jwt::new(load.clone(), &Duration::from_secs(60));
         let token = jwt.encode_with(Algorithm::HS256);
-        let decoded = Jwt::<TestLoad>::decode_with(&token, &Validation::new(Algorithm::HS256)).unwrap();
+        let decoded =
+            Jwt::<TestLoad>::decode_with(&token, &Validation::new(Algorithm::HS256)).unwrap();
         println!("{token}");
         assert_eq!(load, decoded);
     }

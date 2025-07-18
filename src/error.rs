@@ -6,31 +6,31 @@ use serde::Serialize;
 #[derive(Debug, thiserror::Error, Serialize)]
 pub enum AppError {
     #[error("服务器好像把它弄丢了. 😢 {0}")]
-    NotFound(String),               // 404 Not Found
-    
+    NotFound(String), // 404 Not Found
+
     #[error("不要这样对我! 🥲")]
-    MethodNotAllowed,               // 405 Method Not Allowed
-    
+    MethodNotAllowed, // 405 Method Not Allowed
+
     #[error("你这请求是啥啊? 🤔 {0}")]
-    BadRequest(String),             // 400 Bad Request
-    
+    BadRequest(String), // 400 Bad Request
+
     #[error("你这 JSON 不对吧? 🤔 {0}")]
-    BadJson(String),                // 400 Bad Request
-    
+    BadJson(String), // 400 Bad Request
+
     #[error("你的路径好像不对? 🤔 {0}")]
-    BadPath(String),                // 400 Bad Request
+    BadPath(String), // 400 Bad Request
 
     #[error("不是你谁啊, 先登录. 😢 {0}")]
-    Unauthorized(String),           // 401 Unauthorized
-    
+    Unauthorized(String), // 401 Unauthorized
+
     #[error("你请求参数取值好像不对, 服务器没法处理. 😢 {0}")]
-    UnprocessableEntity(String),    // 422 Unprocessable Entity
-    
+    UnprocessableEntity(String), // 422 Unprocessable Entity
+
     #[error("坏了, 服务器出问题了... 😶 {0}")]
-    Internal(String),               // 500 服务器内部错误
-    
+    Internal(String), // 500 服务器内部错误
+
     #[error("数据库应该出问题了. 😍")]
-    Database(String),               // 500 数据库错误
+    Database(String), // 500 数据库错误
 }
 
 impl IntoResponse for AppError {
@@ -40,13 +40,15 @@ impl IntoResponse for AppError {
             status_code: u16,
             message: String,
         }
-        
-        (self.status_code(), axum::Json(
-            ResponseStruct {
+
+        (
+            self.status_code(),
+            axum::Json(ResponseStruct {
                 status_code: self.status_code().as_u16(),
                 message: self.to_string(),
-            }
-        )).into_response()
+            }),
+        )
+            .into_response()
     }
 }
 
@@ -64,9 +66,9 @@ impl AppError {
     }
 }
 
-impl Into<AppError> for anyhow::Error {
-    fn into(self) -> AppError {
-        AppError::Internal(self.to_string())
+impl From<anyhow::Error> for AppError {
+    fn from(val: anyhow::Error) -> Self {
+        AppError::Internal(val.to_string())
     }
 }
 
@@ -98,9 +100,9 @@ impl From<axum_valid::ValidRejection<AppError>> for AppError {
     }
 }
 
-impl Into<AppError> for sea_orm::DbErr {
-    fn into(self) -> AppError {
-        AppError::Database(self.to_string())
+impl From<sea_orm::DbErr> for AppError {
+    fn from(val: sea_orm::DbErr) -> Self {
+        AppError::Database(val.to_string())
     }
 }
 

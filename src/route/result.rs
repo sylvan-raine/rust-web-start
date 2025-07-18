@@ -8,7 +8,7 @@ macro_rules! throw_err {
     ($err_or_success : expr) => {
         match $err_or_success {
             Ok(val) => val,
-            Err(err) => return crate::route::AppResult::Err(err.into())
+            Err(err) => return $crate::route::AppResult::Err(err.into()),
         }
     };
 }
@@ -16,14 +16,14 @@ macro_rules! throw_err {
 #[derive(Serialize)]
 pub enum AppResult<T: Serialize> {
     Err(AppError),
-    Ok(T)
+    Ok(T),
 }
 
 impl<T: Serialize> IntoResponse for AppResult<T> {
     fn into_response(self) -> axum::response::Response {
         match self {
             AppResult::Err(e) => e.into_response(),
-            AppResult::Ok(val) => axum::Json(val).into_response()
+            AppResult::Ok(val) => axum::Json(val).into_response(),
         }
     }
 }

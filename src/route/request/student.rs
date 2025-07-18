@@ -1,23 +1,23 @@
-use axum::{debug_handler, routing, Router};
-use axum::extract::State;
-use sea_orm::prelude::Expr;
-use sea_orm::sea_query::IntoCondition;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType, 
-    ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait
-};
-use serde::Deserialize;
-use validator::Validate;
 use crate::entity::prelude::Student;
-use crate::entity::{department, student};
-use crate::entity::student::Model;
 use crate::entity::student::ActiveModel;
+use crate::entity::student::Model;
+use crate::entity::{department, student};
 use crate::error::AppError;
 use crate::route::extract::{Path, ValidJson, ValidQuery};
 use crate::route::page::{Page, PageParam};
 use crate::route::result::AppResult;
 use crate::server::ServerState;
 use crate::throw_err;
+use axum::extract::State;
+use axum::{Router, debug_handler, routing};
+use sea_orm::prelude::Expr;
+use sea_orm::sea_query::IntoCondition;
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType,
+    ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait,
+};
+use serde::Deserialize;
+use validator::Validate;
 
 pub fn router() -> Router<ServerState> {
     Router::new()
@@ -59,7 +59,7 @@ struct InsertParams {
 #[debug_handler]
 async fn insert(
     State(state): State<ServerState>,
-    ValidJson(params): ValidJson<InsertParams>
+    ValidJson(params): ValidJson<InsertParams>,
 ) -> AppResult<String> {
     tracing::debug!("开始处理: 添加 Student");
     let new_student = params.into_active_model();
@@ -71,11 +71,11 @@ async fn insert(
 async fn update(
     State(state): State<ServerState>,
     Path(id): Path<String>,
-    ValidJson(params): ValidJson<InsertParams>
+    ValidJson(params): ValidJson<InsertParams>,
 ) -> AppResult<String> {
     tracing::debug!("开始处理: 更新 Student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
-    if let Some(_) = target {
+    if target.is_some() {
         throw_err!(params.into_active_model().update(state.db()).await);
         AppResult::Ok(format!("成功更新一条 id 为 {id} 的 Student 记录!"))
     } else {
@@ -84,16 +84,13 @@ async fn update(
 }
 
 #[debug_handler]
-async fn delete(
-    State(state): State<ServerState>,
-    Path(id): Path<String>,
-) -> AppResult<String> {
+async fn delete(State(state): State<ServerState>, Path(id): Path<String>) -> AppResult<String> {
     tracing::debug!("开始处理: 删除 student");
     let target = throw_err!(Student::find_by_id(&id).one(state.db()).await);
     if let Some(student) = target {
         throw_err!(student.delete(state.db()).await);
         tracing::info!("已删除 id 为 {id} 的 Student");
-        AppResult::Ok(format!("成功删除 id 为 {id} 的学生!"))    
+        AppResult::Ok(format!("成功删除 id 为 {id} 的学生!"))
     } else {
         AppResult::Err(AppError::NotFound("没有相关的 Student 记录".to_string()))
     }
@@ -105,7 +102,7 @@ async fn delete(
 struct QueryParams {
     keyword: Option<String>,
     department: Option<String>,
-    
+
     #[validate(email)]
     email: Option<String>,
 
@@ -124,15 +121,21 @@ struct QueryParams {
 #[debug_handler]
 async fn query(
     State(state): State<ServerState>,
-    ValidQuery(params): ValidQuery<QueryParams>
+    ValidQuery(params): ValidQuery<QueryParams>,
 ) -> AppResult<Page<Model>> {
     tracing::debug!("开始处理: Query student");
     let pagination = Student::find()
         .apply_if(params.department, |rows, keyword| {
-            rows.join(JoinType::InnerJoin, department::Relation::Student.def().rev()
-                .on_condition(move |_student, department_name| {
-                    Expr::col((department_name, department::Column::Name)).like(format!("%{keyword}%")).into_condition()
-                }))
+            rows.join(
+                JoinType::InnerJoin,
+                department::Relation::Student.def().rev().on_condition(
+                    move |_student, department_name| {
+                        Expr::col((department_name, department::Column::Name))
+                            .like(format!("%{keyword}%"))
+                            .into_condition()
+                    },
+                ),
+            )
         })
         .apply_if(params.keyword.as_ref(), |rows, keyword| {
             rows.filter(student::Column::Name.contains(keyword))
@@ -152,5 +155,9 @@ async fn query(
     let total = throw_err!(pagination.num_pages().await);
     let items = throw_err!(pagination.fetch_page(params.page.index - 1).await);
 
-    AppResult::Ok(Page { param: params.page, total, items })
+    AppResult::Ok(Page {
+        param: params.page,
+        total,
+        items,
+    })
 }

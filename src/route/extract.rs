@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use axum::extract::{FromRequest, FromRequestParts, Request};
-use axum_valid::HasValidate;
 use axum::http::request::Parts;
+use axum_valid::HasValidate;
 
 macro_rules! impl_from_request {
     ($name: ident, $wrapper: ident, FromRequestParts) => {
@@ -12,7 +12,10 @@ macro_rules! impl_from_request {
         {
             type Rejection = AppError;
 
-            async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+            async fn from_request_parts(
+                parts: &mut Parts,
+                state: &S,
+            ) -> Result<Self, Self::Rejection> {
                 Ok($name(Valid::from_request_parts(parts, state).await?.0.0))
             }
         }
@@ -31,7 +34,6 @@ macro_rules! impl_from_request {
         }
     };
 }
-
 
 pub struct ValidQuery<T>(pub T);
 pub struct ValidPath<T>(pub T);

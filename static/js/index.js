@@ -3,7 +3,7 @@
 import { login, token_legal } from "./auth.js";
 
 const overlay = document.querySelector(".overlay");
-const handin_btn = document.querySelector("#handin-information");
+const handin_btn = document.querySelector("#submit-information");
 const login_btn = document.querySelector("#login-button");
 const login_window = document.querySelector("#login-window");
 const cancel_button = document.querySelector("#cancel-button");

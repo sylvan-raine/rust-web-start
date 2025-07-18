@@ -1,13 +1,5 @@
-use axum::{debug_handler, routing, Router};
-use axum::extract::State;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, 
-    IntoActiveModel, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QueryTrait
-};
-use serde::Deserialize;
-use validator::Validate;
 use crate::entity::department;
-use crate::entity::department::{Model, ActiveModel};
+use crate::entity::department::{ActiveModel, Model};
 use crate::entity::prelude::Department;
 use crate::error::AppError;
 use crate::route::extract::{Path, ValidJson, ValidQuery};
@@ -15,6 +7,14 @@ use crate::route::page::{Page, PageParam};
 use crate::route::result::AppResult;
 use crate::server::ServerState;
 use crate::throw_err;
+use axum::extract::State;
+use axum::{Router, debug_handler, routing};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, ModelTrait,
+    PaginatorTrait, QueryFilter, QueryOrder, QueryTrait,
+};
+use serde::Deserialize;
+use validator::Validate;
 
 pub fn router() -> Router<ServerState> {
     Router::new()
@@ -51,7 +51,7 @@ struct InsertParams {
 #[debug_handler]
 async fn insert(
     State(state): State<ServerState>,
-    ValidJson(params): ValidJson<InsertParams>
+    ValidJson(params): ValidJson<InsertParams>,
 ) -> AppResult<String> {
     tracing::debug!("开始处理: 添加 Department");
     throw_err!(params.into_active_model().insert(state.db()).await);
@@ -63,24 +63,23 @@ async fn insert(
 async fn update(
     State(state): State<ServerState>,
     Path(id): Path<String>,
-    ValidJson(params): ValidJson<InsertParams>
+    ValidJson(params): ValidJson<InsertParams>,
 ) -> AppResult<String> {
     tracing::debug!("开始处理: 修改 Department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
-    if let Some(_) = target {
+    if target.is_some() {
         throw_err!(params.into_active_model().update(state.db()).await);
         AppResult::Ok("成功修改一条 Department 数据!".to_string())
     } else {
-        AppResult::Err(AppError::NotFound("没有相关的 Department 记录!".to_string()))
+        AppResult::Err(AppError::NotFound(
+            "没有相关的 Department 记录!".to_string(),
+        ))
     }
 }
 
 /// 路由到 department 模块下的 delete 页面
 #[debug_handler]
-async fn delete(
-    State(state): State<ServerState>,
-    Path(id): Path<String>,
-) -> AppResult<String> {
+async fn delete(State(state): State<ServerState>, Path(id): Path<String>) -> AppResult<String> {
     tracing::debug!("开始处理: 删除 Department");
     let target = throw_err!(Department::find_by_id(&id).one(state.db()).await);
     if let Some(department) = target {
@@ -88,7 +87,9 @@ async fn delete(
         tracing::info!("已删除一条 id 为 {id} 的 Department 记录");
         AppResult::Ok(format!("成功删除一条 id 为 {id} 的 Department 记录!"))
     } else {
-        AppResult::Err(AppError::NotFound("没有相关的 Department 记录!".to_string()))
+        AppResult::Err(AppError::NotFound(
+            "没有相关的 Department 记录!".to_string(),
+        ))
     }
 }
 
@@ -106,14 +107,14 @@ struct QueryParams {
 
     #[validate(nested)]
     #[serde(flatten)]
-    page: PageParam
+    page: PageParam,
 }
 
 /// 处理路由到 department 模块下的查询请求
 #[debug_handler]
 async fn query(
     State(state): State<ServerState>,
-    ValidQuery(params): ValidQuery<QueryParams>
+    ValidQuery(params): ValidQuery<QueryParams>,
 ) -> AppResult<Page<Model>> {
     tracing::debug!("开始处理: 查询 Department");
     let pagination = Department::find()
@@ -132,5 +133,9 @@ async fn query(
     let total = throw_err!(pagination.num_pages().await);
     let items = throw_err!(pagination.fetch_page(params.page.index - 1).await);
 
-    AppResult::Ok(Page { param: params.page, total, items })
+    AppResult::Ok(Page {
+        param: params.page,
+        total,
+        items,
+    })
 }

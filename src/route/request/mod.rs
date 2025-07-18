@@ -1,6 +1,10 @@
-use axum::{debug_handler, handler::HandlerWithoutStateExt, Router};
+use crate::{
+    error::AppError,
+    route::{middleware::AUTH_LAYER, result::AppResult},
+    server::ServerState,
+};
+use axum::{Router, debug_handler, handler::HandlerWithoutStateExt};
 use tower_http::services::ServeDir;
-use crate::{error::AppError, route::{middleware::AUTH_LAYER, result::AppResult}, server::ServerState};
 
 pub mod course;
 pub mod department;

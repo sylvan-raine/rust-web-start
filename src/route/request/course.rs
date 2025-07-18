@@ -14,8 +14,8 @@ use axum::{Router, debug_handler, routing};
 use sea_orm::prelude::Expr;
 use sea_orm::sea_query::IntoCondition;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait,IntoActiveModel, JoinType,
-    ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait
+    ActiveModelTrait, ColumnTrait, DeriveIntoActiveModel, EntityTrait, IntoActiveModel, JoinType,
+    ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, RelationTrait,
 };
 use serde::Deserialize;
 use validator::Validate;
@@ -74,7 +74,7 @@ async fn update(
 ) -> AppResult<String> {
     tracing::debug!("开始处理: 更新 Course 记录");
     let target = throw_err!(Course::find_by_id(&id).one(state.db()).await);
-    if let Some(_) = target {
+    if target.is_some() {
         throw_err!(json.into_active_model().update(state.db()).await);
         AppResult::Ok("成功更新这条 Course 记录!".to_string())
     } else {
@@ -84,10 +84,7 @@ async fn update(
 
 /// 处理路由到 course 模块下的 delete 请求
 #[debug_handler]
-async fn delete(
-    State(state): State<ServerState>, 
-    Path(id): Path<String>
-) -> AppResult<String> {
+async fn delete(State(state): State<ServerState>, Path(id): Path<String>) -> AppResult<String> {
     tracing::debug!("开始处理: 删除 Course 记录");
     let target = throw_err!(Course::find_by_id(&id).one(state.db()).await);
     if let Some(course) = target {
@@ -124,10 +121,16 @@ async fn query(
     tracing::debug!("开始处理: Query course");
     let course = Course::find()
         .apply_if(params.department, |rows, keyword| {
-            rows.join(JoinType::InnerJoin, department::Relation::Course.def().rev()
-                .on_condition(move |_course, department_name| {
-                    Expr::col((department_name, department::Column::Name)).like(format!("%{keyword}%")).into_condition()
-                }))
+            rows.join(
+                JoinType::InnerJoin,
+                department::Relation::Course.def().rev().on_condition(
+                    move |_course, department_name| {
+                        Expr::col((department_name, department::Column::Name))
+                            .like(format!("%{keyword}%"))
+                            .into_condition()
+                    },
+                ),
+            )
         })
         .apply_if(params.name.as_ref(), |rows, key| {
             rows.filter(course::Column::Name.contains(key))
@@ -144,5 +147,9 @@ async fn query(
     let total = throw_err!(course.num_pages().await);
     let items = throw_err!(course.fetch_page(params.page.index - 1).await);
 
-    AppResult::Ok(Page { param: params.page, total, items })
+    AppResult::Ok(Page {
+        param: params.page,
+        total,
+        items,
+    })
 }

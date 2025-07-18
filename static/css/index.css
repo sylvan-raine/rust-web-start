@@ -9,7 +9,7 @@ button {
     display: block;
     backdrop-filter: blur(50px);
     background-color: white;
-    border: solid, rgb(175, 201, 201);
+    border: solid rgb(175, 201, 201);
     border-radius: 50px;
     text-align: center;
     transition: all 0.5s;
@@ -17,11 +17,11 @@ button {
 }
 
 button:hover {
-    border: solid, rgb(148, 217, 228);
+    border: solid rgb(148, 217, 228);
 }
 
 button:active {
-    border: solid, rgb(58, 190, 251);
+    border: solid rgb(58, 190, 251);
 }
 
 #login-button {
@@ -104,7 +104,7 @@ button:active {
     line-height: 30px;
 }
 
-#handin-information {
+#submit-information {
     width: 80px;
     height: 30px;
     margin-top: 40px;

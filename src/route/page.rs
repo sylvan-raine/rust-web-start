@@ -8,7 +8,7 @@ pub struct Page<T: Serialize> {
     #[serde(flatten)]
     pub param: PageParam,
     pub total: u64,
-    pub items: Vec<T>
+    pub items: Vec<T>,
 }
 
 #[derive(Serialize, Deserialize, Validate, Clone, Copy)]
@@ -17,7 +17,7 @@ pub struct PageParam {
     #[validate(range(min = 1, message = "页码应大于等于 1."))]
     #[serde(default = "PageParam::default_index", deserialize_with = "from_str")]
     pub index: u64,
-    
+
     /// 代表一页能容纳多少条数据
     #[validate(range(min = 1, max = 100, message = "每页所含信息应在 1 条至 100 条之间."))]
     #[serde(default = "PageParam::default_size", deserialize_with = "from_str")]

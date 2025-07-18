@@ -55,7 +55,6 @@ export async function login(id, password) {
 export async function auth_fetch(url, options = {}) {
     const token = get_token();
 
-    // 设置认证头
     const headers = new Headers(options.headers || {});
     if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -71,7 +70,6 @@ export async function auth_fetch(url, options = {}) {
 
         if (response.status == 401) {
             clear_token();
-            redirect_login();
             return Promise.reject(await response.json());
         } else {
             return response;

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/communal.css">
+    <link rel="stylesheet" href="./css/student.css">
+    <title>学生</title>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-item">
+            <label for="student_name">学生名字</label>
+            <input type="text" id="keyword">
+        </div>
+
+        <div class="form-item">
+            <label for="department">学生学院</label>
+            <input type="text" id="department">
+        </div>
+
+
+        <div class="form-item">
+            <label for="email">学生邮箱</label>
+            <input type="text" id="email">
+        </div>
+
+        <div class="form-item">
+            <label for="sex">性别</label>
+            <input type="text" id="sex">
+        </div>
+
+        <div class="form-item">
+            <label for="age">年龄</label>
+            <input type="number" id="age">
+        </div>
+
+        <div class="form-item">
+            <label for="page-size">页面大小</label>
+            <input type="number" id="page-size">
+        </div>
+
+        <div class="form-item">
+            <label for="page-index">页码</label>
+            <input type="number" id="page-index">
+        </div>
+
+        <button id="query">提交</button>
+    </div>
+
+    <table id="data">
+        <caption>
+            查询的学生信息
+        </caption>
+        <thead>
+            <tr>
+                <th scope="col">id</th>
+                <th scope="col">name</th>
+                <th scope="col">sex</th>
+                <th scope="col">age</th>
+                <th scope="col">email</th>
+                <th scope="col">department_id</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script src="./js/student.js" type="module"></script>
+</body>
+</html>

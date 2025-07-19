@@ -2,20 +2,12 @@
 
 const JWT_KEY = 'jwt_token';
 
-// 不需要鉴权的API前缀
-const UNPROTECTED_API = [
-    "/index.html",
-    "/login",
-    "/"
-];
-
 /**
  * 使用用户名和密码登录, 此函数将会把密码进行哈希, 以保护用户数据安全, 故传入的密码不需要哈希
  * @param {string} id 用户标示
  * @param {string} password 用户密码
- * @returns true 如果成功
- * @returns false 如果失败
- * @throws 如果 fetch 函数失败
+ * @returns 如果成功, 什么都不会返回
+ * @throws response, 如果服务器返回了错误信息, 或者 fetch 函数出错了会抛出异常
  */
 export async function login(id, password) {
     const data = {
@@ -36,75 +28,39 @@ export async function login(id, password) {
         const token = await response.json();
         if (response.ok) {
             localStorage.setItem(JWT_KEY, token);
-            return true;
+            return;
         } else {
-            return Promise.reject(token);
+            throw response;
         }
     } catch (error) {
         throw error;
     }
+}
+
+/**
+ * 推出登录, 通过清除 token 实现
+ */
+export function logout() {
+    localStorage.removeItem(JWT_KEY);
 }
 
 /**
  * 将原有的请求封装一个 Authorization 字段, 实现自动携带 token
- * @param {string} url 请求的url
- * @param {object} options 其他的请求报文选项
- * @returns 服务器的相应
- * @throws 当 fetch 函数出现问题时
+ * @param {string} method 请求方法
+ * @param {string} url 请求的路径
+ * @param {object | Headers} options 其他的请求报文选项
+ * @returns 服务器响应的 Promise, 毕竟这个函数就只是多添加一个请求头, 当然如果说本地没有 token, 那就会直接返回错误
  */
-export async function auth_fetch(url, options = {}) {
+export async function auth_fetch(method, url, options = {}) {
+    const headers = new Headers(options);
     const token = get_token();
-
-    const headers = new Headers(options.headers || {});
     if (token) {
         headers.set("Authorization", `Bearer ${token}`);
     } else {
-        return Promise.reject(new Error("token 不存在!"));
+        throw new Error("试图在 token 不存在的情况下请求受保护的 API!");
     }
 
-    try {
-        const response = await fetch(url, {
-            ...options,
-            headers
-        });
-
-        if (response.status == 401) {
-            clear_token();
-            return Promise.reject(await response.json());
-        } else {
-            return response;
-        }
-    } catch (error) {
-        throw error;
-    }
-}
-
-/**
- * 检查当前路径是否需要认证
- * @returns true 如果需要鉴权, false 如果不需要鉴权
- */
-export function requires_auth() {
-    const path = window.location.pathname;
-    if (UNPROTECTED_API.includes(path)) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-/**
- * 将 token 存储到本地
- * @param {string} token 需要存储的 token
- */
-export function save_token(token) {
-    localStorage.setItem(JWT_KEY, token);
-}
-
-/**
- * 清除本地存储的 jwt
- */
-export function clear_token() {
-    localStorage.removeItem(JWT_KEY);
+    return fetch(url, { method, headers });
 }
 
 /**
